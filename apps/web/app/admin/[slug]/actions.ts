@@ -225,3 +225,90 @@ export async function deleteTable(tableId: string, slug: string) {
   revalidatePath(`/admin/${slug}/qr`);
 }
 
+// --- Etiketler ---
+
+export async function addTag(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  const name = (formData.get('name') as string)?.trim();
+  if (!name) return;
+  await supabase.from('tags').insert({ tenant_id: tenantId, name });
+  revalidatePath(`/admin/${slug}/tags`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteTag(tagId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('tags').delete().eq('id', tagId);
+  revalidatePath(`/admin/${slug}/tags`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function toggleProductTag(
+  productId: string,
+  tagId: string,
+  slug: string,
+  assign: boolean
+) {
+  const supabase = createClient();
+  if (assign) {
+    await supabase.from('product_tags').insert({ product_id: productId, tag_id: tagId });
+  } else {
+    await supabase
+      .from('product_tags')
+      .delete()
+      .match({ product_id: productId, tag_id: tagId });
+  }
+  revalidatePath(`/admin/${slug}/tags`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+// --- Favoriler ---
+
+export async function toggleFavorite(productId: string, slug: string, value: boolean) {
+  const supabase = createClient();
+  await supabase.from('products').update({ is_favorite: value }).eq('id', productId);
+  revalidatePath(`/admin/${slug}/favorites`);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+// --- Görüş & yorumlar ---
+
+export async function deleteReview(reviewId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('reviews').delete().eq('id', reviewId);
+  revalidatePath(`/admin/${slug}/reviews`);
+}
+
+// --- Adres / şube ---
+
+export async function addLocation(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  await supabase.from('locations').insert({
+    tenant_id: tenantId,
+    name: formData.get('name') as string,
+    address: (formData.get('address') as string) || null,
+    phone: (formData.get('phone') as string) || null,
+  });
+  revalidatePath(`/admin/${slug}/locations`);
+}
+
+export async function updateLocation(locationId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  await supabase
+    .from('locations')
+    .update({
+      name: formData.get('name') as string,
+      address: (formData.get('address') as string) || null,
+      phone: (formData.get('phone') as string) || null,
+    })
+    .eq('id', locationId);
+  revalidatePath(`/admin/${slug}/locations`);
+}
+
+export async function deleteLocation(locationId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('locations').delete().eq('id', locationId);
+  revalidatePath(`/admin/${slug}/locations`);
+}
+

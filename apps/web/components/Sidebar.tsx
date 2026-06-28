@@ -9,8 +9,10 @@ const groups = [
     items: [
       { key: 'sections', label: 'Bölümler & ürünler', href: '' },
       { key: 'prices', label: 'Fiyat güncelleme', href: '/prices' },
+      { key: 'tags', label: 'Ürün etiketleri', href: '/tags' },
+      { key: 'favorites', label: 'Favori listesi', href: '/favorites' },
     ],
-    soon: ['Ürün etiketleri', 'Ürüne ek seçenekler', 'Menü setleri', 'Favori listesi'],
+    soon: ['Ürüne ek seçenekler', 'Menü setleri'],
   },
   {
     title: '2. Tasarım',
@@ -26,14 +28,22 @@ const groups = [
     soon: [],
   },
   {
+    title: '4. Görüş & yorumlar',
+    items: [{ key: 'reviews', label: 'Görüş & yorumlar', href: '/reviews' }],
+    soon: [],
+  },
+  {
     title: '5. Sipariş',
     items: [],
     soon: ['Mekanda sipariş', 'Paket sipariş', 'Raporlar'],
   },
   {
     title: '6. Ayarlar',
-    items: [{ key: 'settings', label: 'İşletme ayarları', href: '/settings' }],
-    soon: ['Adres/şube ayarları', 'Panel kullanıcıları', 'Entegrasyon'],
+    items: [
+      { key: 'settings', label: 'İşletme ayarları', href: '/settings' },
+      { key: 'locations', label: 'Adres/şube ayarları', href: '/locations' },
+    ],
+    soon: ['Panel kullanıcıları', 'Entegrasyon'],
   },
 ];
 

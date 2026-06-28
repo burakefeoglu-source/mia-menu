@@ -36,6 +36,30 @@ export type Product = {
   image_url: string | null;
   sort_order: number;
   is_active: boolean;
+  is_favorite: boolean;
+};
+
+export type Tag = {
+  id: string;
+  tenant_id: string;
+  name: string;
+};
+
+export type Review = {
+  id: string;
+  tenant_id: string;
+  customer_name: string | null;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
+export type Location = {
+  id: string;
+  tenant_id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
 };
 
 export type TableQr = {
