@@ -102,31 +102,41 @@ export default function MenuClient({
 
   return (
     <main className="mx-auto max-w-md min-h-screen bg-white">
-      <header className="bg-rose-50 p-4">
-        <div className="flex justify-between items-start">
-          <h1 className="text-lg font-semibold text-rose-800">{tenant.name}</h1>
-          <div className="inline-flex rounded-full bg-white p-0.5">
-            <button
-              onClick={() => setLang('tr')}
-              className={`text-xs px-2.5 py-1 rounded-full ${
-                lang === 'tr' ? 'bg-rose-600 text-white' : 'text-rose-700'
-              }`}
-            >
-              TR
-            </button>
-            <button
-              onClick={() => setLang('en')}
-              className={`text-xs px-2.5 py-1 rounded-full ${
-                lang === 'en' ? 'bg-rose-600 text-white' : 'text-rose-700'
-              }`}
-            >
-              EN
-            </button>
+      <header className="bg-rose-50 relative">
+        {tenant.cover_image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={tenant.cover_image_url}
+            alt={tenant.name}
+            className="w-full h-32 object-cover"
+          />
+        )}
+        <div className="p-4">
+          <div className="flex justify-between items-start">
+            <h1 className="text-lg font-semibold text-rose-800">{tenant.name}</h1>
+            <div className="inline-flex rounded-full bg-white p-0.5">
+              <button
+                onClick={() => setLang('tr')}
+                className={`text-xs px-2.5 py-1 rounded-full ${
+                  lang === 'tr' ? 'bg-rose-600 text-white' : 'text-rose-700'
+                }`}
+              >
+                TR
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`text-xs px-2.5 py-1 rounded-full ${
+                  lang === 'en' ? 'bg-rose-600 text-white' : 'text-rose-700'
+                }`}
+              >
+                EN
+              </button>
+            </div>
           </div>
+          <span className="inline-flex items-center gap-1 mt-2 text-xs bg-white text-emerald-700 px-2 py-1 rounded-md">
+            {t.allergenInfo}
+          </span>
         </div>
-        <span className="inline-flex items-center gap-1 mt-2 text-xs bg-white text-emerald-700 px-2 py-1 rounded-md">
-          {t.allergenInfo}
-        </span>
       </header>
 
       {announcement && (
@@ -158,6 +168,14 @@ export default function MenuClient({
                 onClick={() => setSelected(p)}
                 className="flex-shrink-0 w-28 border border-gray-200 rounded-md p-2 text-left"
               >
+                {p.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="w-full h-16 object-cover rounded-md mb-1.5"
+                  />
+                ) : null}
                 <p className="text-xs font-medium truncate">{nameFor('product', p.id, p.name)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{p.price} ₺</p>
               </button>
@@ -195,25 +213,35 @@ export default function MenuClient({
             <button
               key={p.id}
               onClick={() => setSelected(p)}
-              className="flex justify-between items-center border border-gray-200 rounded-md px-3 py-2.5 text-left"
+              className="flex justify-between items-center border border-gray-200 rounded-md px-3 py-2.5 text-left gap-2"
             >
-              <div>
-                <p className="text-sm">
-                  {nameFor('product', p.id, p.name)}
-                  {p.product_tags?.map((pt, i) => (
-                    <span
-                      key={i}
-                      className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md"
-                    >
-                      {pt.tags.name}
-                    </span>
-                  ))}
-                </p>
-                {p.description && (
-                  <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>
-                )}
+              <div className="flex items-center gap-2.5 min-w-0">
+                {p.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                  />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="text-sm">
+                    {nameFor('product', p.id, p.name)}
+                    {p.product_tags?.map((pt, i) => (
+                      <span
+                        key={i}
+                        className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md"
+                      >
+                        {pt.tags.name}
+                      </span>
+                    ))}
+                  </p>
+                  {p.description && (
+                    <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>
+                  )}
+                </div>
               </div>
-              <p className="text-sm font-medium whitespace-nowrap">{p.price} ₺</p>
+              <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
             </button>
           ))}
           {filtered.length === 0 && (
@@ -244,6 +272,14 @@ export default function MenuClient({
                 ✕
               </button>
             </div>
+            {selected.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={selected.image_url}
+                alt={selected.name}
+                className="w-full h-36 object-cover rounded-md mt-2"
+              />
+            )}
             {selected.product_tags && selected.product_tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {selected.product_tags.map((pt, i) => (

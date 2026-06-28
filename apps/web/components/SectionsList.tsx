@@ -5,13 +5,14 @@ import {
   addProduct,
   deleteProduct,
   deleteSection,
+  setProductAllergens,
   updateProduct,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
-import type { MenuSection, Product } from '@/types/database';
+import type { Allergen, MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
-  product_allergens?: { allergens: { name_tr: string } }[];
+  product_allergens?: { allergens: { id: string; name_tr: string } }[];
 };
 
 export default function SectionsList({
@@ -19,11 +20,13 @@ export default function SectionsList({
   slug,
   sections,
   products,
+  allergens,
 }: {
   tenantId: string;
   slug: string;
   sections: MenuSection[];
   products: ProductWithAllergens[];
+  allergens: Allergen[];
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
     sections[0] ? { [sections[0].id]: true } : {}
@@ -115,73 +118,42 @@ export default function SectionsList({
               <div className="border-t border-gray-200">
                 {sectionProducts.map((p) =>
                   editingProduct === p.id ? (
-                    <form
+                    <ProductEditForm
                       key={p.id}
-                      className="flex gap-2 px-3 py-2 border-b border-gray-100 items-center"
-                      onSubmit={async (e) => {
-                        e.preventDefault();
-                        const form = e.currentTarget;
-                        const name = (form.elements.namedItem('name') as HTMLInputElement).value;
-                        const price = Number(
-                          (form.elements.namedItem('price') as HTMLInputElement).value
-                        );
-                        const caloriesRaw = (
-                          form.elements.namedItem('calories') as HTMLInputElement
-                        ).value;
-                        await updateProduct(p.id, slug, {
-                          name,
-                          price,
-                          calories: caloriesRaw ? Number(caloriesRaw) : null,
-                        });
-                        setEditingProduct(null);
-                      }}
-                    >
-                      <input
-                        name="name"
-                        defaultValue={p.name}
-                        autoFocus
-                        className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs"
-                      />
-                      <input
-                        name="price"
-                        type="number"
-                        defaultValue={p.price}
-                        className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-                      />
-                      <input
-                        name="calories"
-                        type="number"
-                        defaultValue={p.calories ?? ''}
-                        className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-                      />
-                      <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">
-                        Kaydet
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingProduct(null)}
-                        className="text-xs text-gray-400"
-                      >
-                        Vazgeç
-                      </button>
-                    </form>
+                      slug={slug}
+                      product={p}
+                      allergens={allergens}
+                      onDone={() => setEditingProduct(null)}
+                    />
                   ) : (
                     <div
                       key={p.id}
-                      className="px-3 py-2 text-sm flex justify-between items-center border-b border-gray-100"
+                      className="px-3 py-2 text-sm flex justify-between items-center border-b border-gray-100 gap-2"
                     >
-                      <span>
-                        {p.name}
-                        {p.product_allergens?.map((pa, i) => (
-                          <span
-                            key={i}
-                            className="ml-1.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
-                          >
-                            {pa.allergens.name_tr}
-                          </span>
-                        ))}
-                      </span>
-                      <span className="flex items-center gap-3 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {p.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-md bg-gray-100 flex-shrink-0" />
+                        )}
+                        <span className="truncate">
+                          {p.name}
+                          {p.product_allergens?.map((pa, i) => (
+                            <span
+                              key={i}
+                              className="ml-1.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
+                            >
+                              {pa.allergens.name_tr}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
                         {p.calories ? `${p.calories} kcal` : ''}
                         <span className="font-medium text-gray-900">{p.price} ₺</span>
                         <button onClick={() => setEditingProduct(p.id)} className="text-gray-400">
@@ -203,26 +175,31 @@ export default function SectionsList({
                 )}
                 <form
                   action={boundAddProduct}
-                  className="flex gap-2 px-3 py-2 border-t border-gray-100"
+                  className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-100"
                 >
                   <input
                     name="name"
                     placeholder="Ürün adı"
                     required
-                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs"
+                    className="flex-1 min-w-[100px] border border-gray-200 rounded-md px-2 py-1 text-xs"
                   />
                   <input
                     name="price"
                     type="number"
                     placeholder="Fiyat"
                     required
-                    className="w-20 border border-gray-200 rounded-md px-2 py-1 text-xs"
+                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
                   />
                   <input
                     name="calories"
                     type="number"
                     placeholder="Kalori"
-                    className="w-20 border border-gray-200 rounded-md px-2 py-1 text-xs"
+                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
+                  />
+                  <input
+                    name="image_url"
+                    placeholder="Görsel URL (opsiyonel)"
+                    className="flex-1 min-w-[120px] border border-gray-200 rounded-md px-2 py-1 text-xs"
                   />
                   <button
                     type="submit"
@@ -237,5 +214,109 @@ export default function SectionsList({
         );
       })}
     </div>
+  );
+}
+
+function ProductEditForm({
+  slug,
+  product,
+  allergens,
+  onDone,
+}: {
+  slug: string;
+  product: ProductWithAllergens;
+  allergens: Allergen[];
+  onDone: () => void;
+}) {
+  const [selectedAllergens, setSelectedAllergens] = useState<Set<string>>(
+    new Set((product.product_allergens ?? []).map((pa) => pa.allergens.id))
+  );
+
+  return (
+    <form
+      className="flex flex-col gap-2 px-3 py-2.5 border-b border-gray-100 bg-gray-50"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const name = (form.elements.namedItem('name') as HTMLInputElement).value;
+        const price = Number((form.elements.namedItem('price') as HTMLInputElement).value);
+        const caloriesRaw = (form.elements.namedItem('calories') as HTMLInputElement).value;
+        const imageUrl = (form.elements.namedItem('image_url') as HTMLInputElement).value;
+
+        await updateProduct(product.id, slug, {
+          name,
+          price,
+          calories: caloriesRaw ? Number(caloriesRaw) : null,
+          imageUrl: imageUrl || null,
+        });
+        await setProductAllergens(product.id, slug, Array.from(selectedAllergens));
+        onDone();
+      }}
+    >
+      <div className="flex gap-2">
+        <input
+          name="name"
+          defaultValue={product.name}
+          autoFocus
+          className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs"
+        />
+        <input
+          name="price"
+          type="number"
+          defaultValue={product.price}
+          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
+        />
+        <input
+          name="calories"
+          type="number"
+          defaultValue={product.calories ?? ''}
+          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
+        />
+      </div>
+      <input
+        name="image_url"
+        defaultValue={product.image_url ?? ''}
+        placeholder="Görsel URL"
+        className="border border-gray-200 rounded-md px-2 py-1 text-xs"
+      />
+
+      <div>
+        <p className="text-[11px] text-gray-500 mb-1">Alerjenler</p>
+        <div className="flex flex-wrap gap-2">
+          {allergens.map((a) => {
+            const checked = selectedAllergens.has(a.id);
+            return (
+              <label
+                key={a.id}
+                className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 rounded-md px-1.5 py-0.5"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    setSelectedAllergens((prev) => {
+                      const copy = new Set(prev);
+                      if (checked) copy.delete(a.id);
+                      else copy.add(a.id);
+                      return copy;
+                    });
+                  }}
+                />
+                {a.name_tr}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex gap-2 mt-1">
+        <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">
+          Kaydet
+        </button>
+        <button type="button" onClick={onDone} className="text-xs text-gray-400">
+          Vazgeç
+        </button>
+      </div>
+    </form>
   );
 }

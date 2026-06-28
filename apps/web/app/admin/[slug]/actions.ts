@@ -27,6 +27,7 @@ export async function addProduct(
     name: formData.get('name') as string,
     price: Number(formData.get('price')),
     calories: formData.get('calories') ? Number(formData.get('calories')) : null,
+    image_url: (formData.get('image_url') as string) || null,
   });
 
   revalidatePath(`/admin/${slug}`);
@@ -50,15 +51,36 @@ export async function deleteSection(sectionId: string, slug: string) {
 export async function updateProduct(
   productId: string,
   slug: string,
-  data: { name: string; price: number; calories: number | null }
+  data: { name: string; price: number; calories: number | null; imageUrl: string | null }
 ) {
   const supabase = createClient();
   await supabase
     .from('products')
-    .update({ name: data.name, price: data.price, calories: data.calories })
+    .update({
+      name: data.name,
+      price: data.price,
+      calories: data.calories,
+      image_url: data.imageUrl,
+    })
     .eq('id', productId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/admin/${slug}/prices`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function setProductAllergens(
+  productId: string,
+  slug: string,
+  allergenIds: string[]
+) {
+  const supabase = createClient();
+  await supabase.from('product_allergens').delete().eq('product_id', productId);
+  if (allergenIds.length > 0) {
+    await supabase
+      .from('product_allergens')
+      .insert(allergenIds.map((allergenId) => ({ product_id: productId, allergen_id: allergenId })));
+  }
+  revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
 
@@ -89,6 +111,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       name: formData.get('name') as string,
       phone: formData.get('phone') as string,
       address: formData.get('address') as string,
+      cover_image_url: (formData.get('cover_image_url') as string) || null,
     })
     .eq('id', tenantId);
 

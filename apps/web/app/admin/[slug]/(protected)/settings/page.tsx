@@ -43,6 +43,17 @@ export default async function SettingsPage({ params }: { params: { slug: string 
             className="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm"
           />
         </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">
+            Mağaza fotoğrafı URL (müşteri menüsünün üstünde görünür)
+          </label>
+          <input
+            name="cover_image_url"
+            defaultValue={tenant!.cover_image_url ?? ''}
+            placeholder="https://..."
+            className="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm"
+          />
+        </div>
         <button
           type="submit"
           className="self-start text-sm bg-rose-600 text-white px-3 py-1.5 rounded-md mt-1"
