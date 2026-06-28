@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
-import { allergenIcon } from '@/lib/allergenIcons';
+import { AllergenIcon } from '@/lib/allergenIcons';
 import { submitReview } from './actions';
 
 type ProductWithExtras = Product & {
@@ -308,9 +308,9 @@ export default function MenuClient({
                 selected.product_allergens.map((pa, i) => (
                   <span
                     key={i}
-                    className="text-xs bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md"
+                    className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md"
                   >
-                    {allergenIcon(pa.allergens.code)}{' '}
+                    <AllergenIcon code={pa.allergens.code} className="w-3.5 h-3.5" />
                     {lang === 'tr' ? pa.allergens.name_tr : pa.allergens.name_en}
                   </span>
                 ))

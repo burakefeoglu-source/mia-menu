@@ -8,7 +8,7 @@ import {
   updateProduct,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
-import { allergenIcon } from '@/lib/allergenIcons';
+import { AllergenIcon } from '@/lib/allergenIcons';
 import type { MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
@@ -143,9 +143,10 @@ export default function SectionsList({
                           {p.product_allergens?.map((pa, i) => (
                             <span
                               key={i}
-                              className="ml-1.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
+                              className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
                             >
-                              {allergenIcon(pa.allergens.code)} {pa.allergens.name_tr}
+                              <AllergenIcon code={pa.allergens.code} className="w-3 h-3" />
+                              {pa.allergens.name_tr}
                             </span>
                           ))}
                         </span>

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { addAllergen } from '../../actions';
 import AllergenAssignGrid from '@/components/AllergenAssignGrid';
-import { allergenIcon } from '@/lib/allergenIcons';
+import { AllergenIcon } from '@/lib/allergenIcons';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +49,7 @@ export default async function AllergensPage({ params }: { params: { slug: string
             title={a.description ?? undefined}
             className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2 py-1 rounded-md"
           >
-            <span>{allergenIcon(a.code)}</span>
+            <span><AllergenIcon code={a.code} className="w-3.5 h-3.5" /></span>
             {a.name_tr}
           </span>
         ))}

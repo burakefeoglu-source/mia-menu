@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { deleteAllergen, toggleProductAllergen } from '@/app/admin/[slug]/actions';
-import { allergenIcon } from '@/lib/allergenIcons';
+import { AllergenIcon } from '@/lib/allergenIcons';
 import type { Allergen } from '@/types/database';
 
 export default function AllergenAssignGrid({
@@ -45,7 +45,7 @@ export default function AllergenAssignGrid({
             {allergens.map((a) => (
               <th key={a.id} className="px-2 pb-2 text-xs text-gray-500 font-normal" title={a.description ?? undefined}>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-base">{allergenIcon(a.code)}</span>
+                  <span className="text-base"><AllergenIcon code={a.code} className="w-4 h-4" /></span>
                   <span>{a.name_tr}</span>
                   {a.tenant_id && (
                     <button
