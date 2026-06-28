@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { generateTables, updateQrLogo, updateQrStyle } from '@/app/admin/[slug]/actions';
+import { deleteTable, generateTables, updateQrLogo, updateQrStyle } from '@/app/admin/[slug]/actions';
 import QrCard from './QrCard';
 
 type Style = 'square' | 'rounded' | 'dot';
@@ -145,7 +145,19 @@ export default function QrManager({
         />
         {!showChooser &&
           tableEntries.map((t) => (
-            <QrCard key={t.key} label={t.label} url={t.url} style={style} logoUrl={logoUrl} />
+            <div key={t.key} className="flex flex-col gap-1.5">
+              <QrCard label={t.label} url={t.url} style={style} logoUrl={logoUrl} />
+              <button
+                onClick={() => {
+                  if (confirm(`"${t.label}" karekodunu silmek istediğine emin misin?`)) {
+                    deleteTable(t.key, slug);
+                  }
+                }}
+                className="text-[11px] text-red-500"
+              >
+                Masayı sil
+              </button>
+            </div>
           ))}
       </div>
 
