@@ -1,0 +1,42 @@
+import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import MenuClient from './MenuClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function MenuPage({ params }: { params: { slug: string } }) {
+  const supabase = createClient();
+
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('slug', params.slug)
+    .eq('is_active', true)
+    .single();
+
+  if (!tenant) {
+    notFound();
+  }
+
+  const { data: sections } = await supabase
+    .from('menu_sections')
+    .select('*')
+    .eq('tenant_id', tenant!.id)
+    .eq('is_active', true)
+    .order('sort_order');
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, product_allergens(allergens(name_tr, name_en))')
+    .eq('tenant_id', tenant!.id)
+    .eq('is_active', true)
+    .order('sort_order');
+
+  return (
+    <MenuClient
+      tenant={tenant!}
+      sections={sections ?? []}
+      products={products ?? []}
+    />
+  );
+}

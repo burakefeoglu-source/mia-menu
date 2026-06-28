@@ -1,0 +1,60 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+
+export async function addSection(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  const name = formData.get('name') as string;
+
+  await supabase.from('menu_sections').insert({ tenant_id: tenantId, name });
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function addProduct(
+  tenantId: string,
+  sectionId: string,
+  slug: string,
+  formData: FormData
+) {
+  const supabase = createClient();
+
+  await supabase.from('products').insert({
+    tenant_id: tenantId,
+    section_id: sectionId,
+    name: formData.get('name') as string,
+    price: Number(formData.get('price')),
+    calories: formData.get('calories') ? Number(formData.get('calories')) : null,
+  });
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function updatePrice(productId: string, slug: string, price: number) {
+  const supabase = createClient();
+
+  await supabase.from('products').update({ price }).eq('id', productId);
+
+  revalidatePath(`/admin/${slug}/prices`);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function updateTenant(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+
+  await supabase
+    .from('tenants')
+    .update({
+      name: formData.get('name') as string,
+      phone: formData.get('phone') as string,
+      address: formData.get('address') as string,
+    })
+    .eq('id', tenantId);
+
+  revalidatePath(`/admin/${slug}/settings`);
+  revalidatePath(`/menu/${slug}`);
+}
