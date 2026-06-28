@@ -125,3 +125,17 @@ export async function upsertTranslation(
   revalidatePath(`/admin/${slug}/language`);
   revalidatePath(`/menu/${slug}`);
 }
+
+export async function updateOrderStatus(
+  orderId: string,
+  slug: string,
+  status: 'new' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+) {
+  const supabase = createClient();
+
+  await supabase.from('orders').update({ status }).eq('id', orderId);
+
+  revalidatePath(`/admin/${slug}/orders`);
+  revalidatePath(`/admin/${slug}/reports`);
+}
+

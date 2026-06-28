@@ -55,3 +55,27 @@ export type Announcement = {
   is_active: boolean;
   created_at: string;
 };
+
+export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+
+export type Order = {
+  id: string;
+  tenant_id: string;
+  table_id: string | null;
+  order_type: 'dine_in' | 'takeaway';
+  table_note: string | null;
+  customer_name: string | null;
+  customer_phone: string | null;
+  status: OrderStatus;
+  total: number;
+  created_at: string;
+};
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_name: string;
+  unit_price: number;
+  quantity: number;
+};
