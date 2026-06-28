@@ -19,8 +19,8 @@ const groups = [
   },
   {
     title: '3. Duyuru',
-    items: [],
-    soon: ['Poster duyuru', 'Metin duyuru'],
+    items: [{ key: 'announcements', label: 'Duyurular', href: '/announcements' }],
+    soon: [],
   },
   {
     title: '5. Sipariş',

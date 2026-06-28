@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { MenuSection, Product, Tenant } from '@/types/database';
+import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
 
 type ProductWithAllergens = Product & {
   product_allergens?: { allergens: { name_tr: string; name_en: string } }[];
@@ -11,10 +11,12 @@ export default function MenuClient({
   tenant,
   sections,
   products,
+  announcement,
 }: {
   tenant: Tenant;
   sections: MenuSection[];
   products: ProductWithAllergens[];
+  announcement: Announcement | null;
 }) {
   const [activeSection, setActiveSection] = useState(sections[0]?.id ?? '');
   const [query, setQuery] = useState('');
@@ -37,6 +39,25 @@ export default function MenuClient({
           Alerjen &amp; kalori bilgisi
         </span>
       </header>
+
+      {announcement && (
+        <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5">
+          {announcement.kind === 'poster' && announcement.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={announcement.image_url}
+              alt={announcement.title ?? ''}
+              className="w-full rounded-md mb-2"
+            />
+          )}
+          {announcement.title && (
+            <p className="text-sm font-medium text-amber-900">{announcement.title}</p>
+          )}
+          {announcement.message && (
+            <p className="text-xs text-amber-700 mt-0.5">{announcement.message}</p>
+          )}
+        </div>
+      )}
 
       <div className="p-4">
         <input

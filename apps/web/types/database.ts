@@ -44,3 +44,14 @@ export type TableQr = {
   label: string;
   qr_token: string;
 };
+
+export type Announcement = {
+  id: string;
+  tenant_id: string;
+  kind: 'poster' | 'text';
+  title: string | null;
+  message: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  created_at: string;
+};

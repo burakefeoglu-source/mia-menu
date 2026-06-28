@@ -32,11 +32,20 @@ export default async function MenuPage({ params }: { params: { slug: string } })
     .eq('is_active', true)
     .order('sort_order');
 
+  const { data: announcements } = await supabase
+    .from('announcements')
+    .select('*')
+    .eq('tenant_id', tenant!.id)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
   return (
     <MenuClient
       tenant={tenant!}
       sections={sections ?? []}
       products={products ?? []}
+      announcement={announcements?.[0] ?? null}
     />
   );
 }

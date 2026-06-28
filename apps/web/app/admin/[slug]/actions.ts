@@ -58,3 +58,36 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
   revalidatePath(`/admin/${slug}/settings`);
   revalidatePath(`/menu/${slug}`);
 }
+
+export async function addAnnouncement(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+
+  await supabase.from('announcements').insert({
+    tenant_id: tenantId,
+    kind: formData.get('kind') as string,
+    title: formData.get('title') as string,
+    message: (formData.get('message') as string) || null,
+    image_url: (formData.get('image_url') as string) || null,
+  });
+
+  revalidatePath(`/admin/${slug}/announcements`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function toggleAnnouncement(id: string, slug: string, nextActive: boolean) {
+  const supabase = createClient();
+
+  await supabase.from('announcements').update({ is_active: nextActive }).eq('id', id);
+
+  revalidatePath(`/admin/${slug}/announcements`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteAnnouncement(id: string, slug: string) {
+  const supabase = createClient();
+
+  await supabase.from('announcements').delete().eq('id', id);
+
+  revalidatePath(`/admin/${slug}/announcements`);
+  revalidatePath(`/menu/${slug}`);
+}
