@@ -418,3 +418,23 @@ export async function deleteLocation(locationId: string, slug: string) {
   revalidatePath(`/admin/${slug}/locations`);
 }
 
+// --- Menü tasarım ---
+
+export async function updateThemeColor(tenantId: string, slug: string, theme: string) {
+  const supabase = createClient();
+  await supabase.from('tenants').update({ theme_color: theme }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/design`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function updateSectionDisplayStyle(
+  sectionId: string,
+  slug: string,
+  style: 'list' | 'list_image' | 'grid'
+) {
+  const supabase = createClient();
+  await supabase.from('menu_sections').update({ display_style: style }).eq('id', sectionId);
+  revalidatePath(`/admin/${slug}/design`);
+  revalidatePath(`/menu/${slug}`);
+}
+

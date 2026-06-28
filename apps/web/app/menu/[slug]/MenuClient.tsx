@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
 import { AllergenIcon } from '@/lib/allergenIcons';
+import { getTheme } from '@/lib/menuThemes';
 import { submitReview } from './actions';
 
 type ProductWithExtras = Product & {
@@ -64,6 +65,7 @@ export default function MenuClient({
   const [reviewDone, setReviewDone] = useState(false);
 
   const t = labels[lang];
+  const theme = getTheme(tenant.theme_color);
 
   const enMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -77,6 +79,9 @@ export default function MenuClient({
   }
 
   const favorites = useMemo(() => products.filter((p) => p.is_favorite), [products]);
+
+  const activeSectionObj = sections.find((s) => s.id === activeSection);
+  const displayStyle = activeSectionObj?.display_style ?? 'list_image';
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -103,7 +108,7 @@ export default function MenuClient({
 
   return (
     <main className="mx-auto max-w-md min-h-screen bg-white">
-      <header className="bg-rose-50 relative">
+      <header className={`${theme.headerBg} relative`}>
         {tenant.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -114,12 +119,12 @@ export default function MenuClient({
         )}
         <div className="p-4">
           <div className="flex justify-between items-start">
-            <h1 className="text-lg font-semibold text-rose-800">{tenant.name}</h1>
+            <h1 className={`text-lg font-semibold ${theme.headerText}`}>{tenant.name}</h1>
             <div className="inline-flex rounded-full bg-white p-0.5">
               <button
                 onClick={() => setLang('tr')}
                 className={`text-xs px-2.5 py-1 rounded-full ${
-                  lang === 'tr' ? 'bg-rose-600 text-white' : 'text-rose-700'
+                  lang === 'tr' ? `${theme.accentBg} text-white` : theme.accentText
                 }`}
               >
                 TR
@@ -127,7 +132,7 @@ export default function MenuClient({
               <button
                 onClick={() => setLang('en')}
                 className={`text-xs px-2.5 py-1 rounded-full ${
-                  lang === 'en' ? 'bg-rose-600 text-white' : 'text-rose-700'
+                  lang === 'en' ? `${theme.accentBg} text-white` : theme.accentText
                 }`}
               >
                 EN
@@ -200,7 +205,7 @@ export default function MenuClient({
               onClick={() => setActiveSection(s.id)}
               className={`whitespace-nowrap text-sm px-3 py-1.5 rounded-full border ${
                 activeSection === s.id
-                  ? 'bg-rose-600 text-white border-rose-600'
+                  ? `${theme.accentBg} text-white ${theme.accentBorder}`
                   : 'bg-white text-gray-700 border-gray-200'
               }`}
             >
@@ -209,46 +214,72 @@ export default function MenuClient({
           ))}
         </div>
 
-        <div className="flex flex-col gap-2">
-          {filtered.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setSelected(p)}
-              className="flex justify-between items-center border border-gray-200 rounded-md px-3 py-2.5 text-left gap-2"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
+        {displayStyle === 'grid' ? (
+          <div className="grid grid-cols-2 gap-2">
+            {filtered.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelected(p)}
+                className="border border-gray-200 rounded-md overflow-hidden text-left"
+              >
                 {p.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={p.image_url}
-                    alt={p.name}
-                    className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-                  />
-                ) : null}
-                <div className="min-w-0">
-                  <p className="text-sm">
-                    {nameFor('product', p.id, p.name)}
-                    {p.product_tags?.map((pt, i) => (
-                      <span
-                        key={i}
-                        className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md"
-                      >
-                        {pt.tags.name}
-                      </span>
-                    ))}
-                  </p>
-                  {p.description && (
-                    <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>
-                  )}
+                  <img src={p.image_url} alt={p.name} className="w-full h-24 object-cover" />
+                ) : (
+                  <div className="w-full h-24 bg-gray-100" />
+                )}
+                <div className="p-2">
+                  <p className="text-xs truncate">{nameFor('product', p.id, p.name)}</p>
+                  <p className="text-xs font-medium mt-1">{p.price} ₺</p>
                 </div>
-              </div>
-              <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
-            </button>
-          ))}
-          {filtered.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>
-          )}
-        </div>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-8 col-span-2">{t.notFound}</p>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {filtered.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelected(p)}
+                className="flex justify-between items-center border border-gray-200 rounded-md px-3 py-2.5 text-left gap-2"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {displayStyle === 'list_image' && p.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.image_url}
+                      alt={p.name}
+                      className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                    />
+                  ) : null}
+                  <div className="min-w-0">
+                    <p className="text-sm">
+                      {nameFor('product', p.id, p.name)}
+                      {p.product_tags?.map((pt, i) => (
+                        <span
+                          key={i}
+                          className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md"
+                        >
+                          {pt.tags.name}
+                        </span>
+                      ))}
+                    </p>
+                    {p.description && (
+                      <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>
+            )}
+          </div>
+        )}
 
         <button
           onClick={() => setShowReview(true)}
@@ -370,7 +401,7 @@ export default function MenuClient({
                 <button
                   onClick={handleReviewSubmit}
                   disabled={reviewSubmitting}
-                  className="w-full bg-rose-600 text-white rounded-md py-2 text-sm font-medium disabled:opacity-50"
+                  className={`w-full ${theme.accentBg} text-white rounded-md py-2 text-sm font-medium disabled:opacity-50`}
                 >
                   {reviewSubmitting ? 'Gönderiliyor...' : 'Gönder'}
                 </button>
@@ -387,7 +418,7 @@ export default function MenuClient({
                     setReviewComment('');
                     setReviewRating(5);
                   }}
-                  className="text-sm bg-rose-600 text-white rounded-md py-2 px-4"
+                  className={`text-sm ${theme.accentBg} text-white rounded-md py-2 px-4`}
                 >
                   Kapat
                 </button>

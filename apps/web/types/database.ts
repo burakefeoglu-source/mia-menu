@@ -9,6 +9,7 @@ export type Tenant = {
   default_locale: string;
   is_active: boolean;
   qr_style: 'square' | 'rounded' | 'dot';
+  theme_color: string;
 };
 
 export type MenuSection = {
@@ -17,6 +18,7 @@ export type MenuSection = {
   name: string;
   sort_order: number;
   is_active: boolean;
+  display_style: 'list' | 'list_image' | 'grid';
 };
 
 export type Allergen = {

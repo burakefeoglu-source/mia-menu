@@ -18,10 +18,11 @@ const groups = [
   {
     title: '2. Tasarım',
     items: [
+      { key: 'design', label: 'Menü tasarım', href: '/design' },
       { key: 'qr', label: 'Karekod', href: '/qr' },
       { key: 'language', label: 'Dil ayarları', href: '/language' },
     ],
-    soon: ['Menü tasarım'],
+    soon: [],
   },
   {
     title: '3. Duyuru',
