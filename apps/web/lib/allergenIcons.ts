@@ -1,12 +1,18 @@
 const ICONS: Record<string, string> = {
   gluten: '🌾',
-  milk: '🥛',
+  crustacea: '🦐',
   egg: '🥚',
-  nuts: '🥜',
-  sesame: '🫘',
-  soy: '🫛',
   fish: '🐟',
-  shellfish: '🦐',
+  peanuts: '🥜',
+  soy: '🫛',
+  milk: '🥛',
+  tree_nuts: '🌰',
+  celery: '🥬',
+  mustard: '🫙',
+  sesame: '🫘',
+  sulphites: '🍷',
+  lupin: '🌱',
+  molluscs: '🐚',
 };
 
 export function allergenIcon(code: string | null): string {

@@ -25,6 +25,7 @@ export type Allergen = {
   code: string | null;
   name_tr: string;
   name_en: string | null;
+  description: string | null;
 };
 
 export type Product = {

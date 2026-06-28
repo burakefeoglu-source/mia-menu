@@ -43,7 +43,7 @@ export default function AllergenAssignGrid({
           <tr>
             <th className="text-left pr-4 pb-2 text-xs text-gray-500 font-normal">Ürün</th>
             {allergens.map((a) => (
-              <th key={a.id} className="px-2 pb-2 text-xs text-gray-500 font-normal">
+              <th key={a.id} className="px-2 pb-2 text-xs text-gray-500 font-normal" title={a.description ?? undefined}>
                 <div className="flex flex-col items-center gap-1">
                   <span className="text-base">{allergenIcon(a.code)}</span>
                   <span>{a.name_tr}</span>

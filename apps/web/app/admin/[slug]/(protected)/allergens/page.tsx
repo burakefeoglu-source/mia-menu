@@ -46,6 +46,7 @@ export default async function AllergensPage({ params }: { params: { slug: string
         {(allergens ?? []).map((a) => (
           <span
             key={a.id}
+            title={a.description ?? undefined}
             className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2 py-1 rounded-md"
           >
             <span>{allergenIcon(a.code)}</span>
