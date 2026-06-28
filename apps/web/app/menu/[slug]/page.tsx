@@ -40,12 +40,20 @@ export default async function MenuPage({ params }: { params: { slug: string } })
     .order('created_at', { ascending: false })
     .limit(1);
 
+  const { data: translations } = await supabase
+    .from('translations')
+    .select('entity_type, entity_id, value')
+    .eq('tenant_id', tenant!.id)
+    .eq('locale', 'en')
+    .eq('field', 'name');
+
   return (
     <MenuClient
       tenant={tenant!}
       sections={sections ?? []}
       products={products ?? []}
       announcement={announcements?.[0] ?? null}
+      translations={translations ?? []}
     />
   );
 }

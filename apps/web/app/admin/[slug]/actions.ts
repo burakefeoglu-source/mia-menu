@@ -91,3 +91,37 @@ export async function deleteAnnouncement(id: string, slug: string) {
   revalidatePath(`/admin/${slug}/announcements`);
   revalidatePath(`/menu/${slug}`);
 }
+
+export async function upsertTranslation(
+  tenantId: string,
+  slug: string,
+  entityType: 'product' | 'section',
+  entityId: string,
+  field: string,
+  value: string
+) {
+  const supabase = createClient();
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    await supabase
+      .from('translations')
+      .delete()
+      .match({ entity_type: entityType, entity_id: entityId, locale: 'en', field });
+  } else {
+    await supabase.from('translations').upsert(
+      {
+        tenant_id: tenantId,
+        entity_type: entityType,
+        entity_id: entityId,
+        locale: 'en',
+        field,
+        value: trimmed,
+      },
+      { onConflict: 'entity_type,entity_id,locale,field' }
+    );
+  }
+
+  revalidatePath(`/admin/${slug}/language`);
+  revalidatePath(`/menu/${slug}`);
+}

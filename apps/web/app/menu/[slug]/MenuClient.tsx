@@ -7,36 +7,99 @@ type ProductWithAllergens = Product & {
   product_allergens?: { allergens: { name_tr: string; name_en: string } }[];
 };
 
+type Translation = {
+  entity_type: 'product' | 'section' | 'tenant';
+  entity_id: string;
+  value: string;
+};
+
+const labels = {
+  tr: {
+    allergenInfo: 'Alerjen & kalori bilgisi',
+    search: 'Ürün ara...',
+    notFound: 'Ürün bulunamadı',
+    allergens: 'Alerjenler',
+    noAllergens: 'Belirtilen alerjen yok',
+    footnote: 'Bu bilgiler 1 Temmuz 2026 yönetmeliğine uygun olarak sunulmaktadır.',
+  },
+  en: {
+    allergenInfo: 'Allergen & calorie info',
+    search: 'Search dishes...',
+    notFound: 'No items found',
+    allergens: 'Allergens',
+    noAllergens: 'No listed allergens',
+    footnote: 'This information is shown in line with the regulation effective July 1, 2026.',
+  },
+};
+
 export default function MenuClient({
   tenant,
   sections,
   products,
   announcement,
+  translations,
 }: {
   tenant: Tenant;
   sections: MenuSection[];
   products: ProductWithAllergens[];
   announcement: Announcement | null;
+  translations: Translation[];
 }) {
+  const [lang, setLang] = useState<'tr' | 'en'>('tr');
   const [activeSection, setActiveSection] = useState(sections[0]?.id ?? '');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithAllergens | null>(null);
 
+  const t = labels[lang];
+
+  const enMap = useMemo(() => {
+    const map = new Map<string, string>();
+    translations.forEach((tr) => map.set(`${tr.entity_type}:${tr.entity_id}`, tr.value));
+    return map;
+  }, [translations]);
+
+  function nameFor(entityType: 'product' | 'section', id: string, fallback: string) {
+    if (lang === 'tr') return fallback;
+    return enMap.get(`${entityType}:${id}`) || fallback;
+  }
+
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const matchesSection = p.section_id === activeSection;
+      const displayName = nameFor('product', p.id, p.name);
       const matchesQuery =
-        query.trim() === '' || p.name.toLowerCase().includes(query.toLowerCase());
+        query.trim() === '' || displayName.toLowerCase().includes(query.toLowerCase());
       return matchesSection && matchesQuery;
     });
-  }, [products, activeSection, query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, activeSection, query, lang, enMap]);
 
   return (
     <main className="mx-auto max-w-md min-h-screen bg-white">
       <header className="bg-rose-50 p-4">
-        <h1 className="text-lg font-semibold text-rose-800">{tenant.name}</h1>
+        <div className="flex justify-between items-start">
+          <h1 className="text-lg font-semibold text-rose-800">{tenant.name}</h1>
+          <div className="inline-flex rounded-full bg-white p-0.5">
+            <button
+              onClick={() => setLang('tr')}
+              className={`text-xs px-2.5 py-1 rounded-full ${
+                lang === 'tr' ? 'bg-rose-600 text-white' : 'text-rose-700'
+              }`}
+            >
+              TR
+            </button>
+            <button
+              onClick={() => setLang('en')}
+              className={`text-xs px-2.5 py-1 rounded-full ${
+                lang === 'en' ? 'bg-rose-600 text-white' : 'text-rose-700'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
         <span className="inline-flex items-center gap-1 mt-2 text-xs bg-white text-emerald-700 px-2 py-1 rounded-md">
-          Alerjen &amp; kalori bilgisi
+          {t.allergenInfo}
         </span>
       </header>
 
@@ -63,7 +126,7 @@ export default function MenuClient({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ürün ara..."
+          placeholder={t.search}
           className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm mb-3"
         />
 
@@ -78,7 +141,7 @@ export default function MenuClient({
                   : 'bg-white text-gray-700 border-gray-200'
               }`}
             >
-              {s.name}
+              {nameFor('section', s.id, s.name)}
             </button>
           ))}
         </div>
@@ -91,7 +154,7 @@ export default function MenuClient({
               className="flex justify-between items-center border border-gray-200 rounded-md px-3 py-2.5 text-left"
             >
               <div>
-                <p className="text-sm">{p.name}</p>
+                <p className="text-sm">{nameFor('product', p.id, p.name)}</p>
                 {p.description && (
                   <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>
                 )}
@@ -100,7 +163,7 @@ export default function MenuClient({
             </button>
           ))}
           {filtered.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-8">Ürün bulunamadı</p>
+            <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>
           )}
         </div>
       </div>
@@ -115,7 +178,7 @@ export default function MenuClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start">
-              <p className="font-medium">{selected.name}</p>
+              <p className="font-medium">{nameFor('product', selected.id, selected.name)}</p>
               <button onClick={() => setSelected(null)} className="text-gray-400">
                 ✕
               </button>
@@ -129,7 +192,7 @@ export default function MenuClient({
                 <span className="text-gray-500">{selected.calories} kcal</span>
               )}
             </div>
-            <p className="text-xs text-gray-500 mb-1.5">Alerjenler</p>
+            <p className="text-xs text-gray-500 mb-1.5">{t.allergens}</p>
             <div className="flex flex-wrap gap-1.5 mb-3">
               {selected.product_allergens && selected.product_allergens.length > 0 ? (
                 selected.product_allergens.map((pa, i) => (
@@ -137,16 +200,14 @@ export default function MenuClient({
                     key={i}
                     className="text-xs bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md"
                   >
-                    {pa.allergens.name_tr}
+                    {lang === 'tr' ? pa.allergens.name_tr : pa.allergens.name_en}
                   </span>
                 ))
               ) : (
-                <span className="text-xs text-gray-400">Belirtilen alerjen yok</span>
+                <span className="text-xs text-gray-400">{t.noAllergens}</span>
               )}
             </div>
-            <p className="text-[11px] text-gray-400">
-              Bu bilgiler 1 Temmuz 2026 yönetmeliğine uygun olarak sunulmaktadır.
-            </p>
+            <p className="text-[11px] text-gray-400">{t.footnote}</p>
           </div>
         </div>
       )}
