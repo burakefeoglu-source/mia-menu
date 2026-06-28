@@ -21,9 +21,10 @@ export type MenuSection = {
 
 export type Allergen = {
   id: string;
-  code: string;
+  tenant_id: string | null;
+  code: string | null;
   name_tr: string;
-  name_en: string;
+  name_en: string | null;
 };
 
 export type Product = {

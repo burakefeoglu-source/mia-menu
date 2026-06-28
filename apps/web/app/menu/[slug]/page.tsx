@@ -27,7 +27,7 @@ export default async function MenuPage({ params }: { params: { slug: string } })
 
   const { data: products } = await supabase
     .from('products')
-    .select('*, product_allergens(allergens(name_tr, name_en)), product_tags(tags(name))')
+    .select('*, product_allergens(allergens(code, name_tr, name_en)), product_tags(tags(name))')
     .eq('tenant_id', tenant!.id)
     .eq('is_active', true)
     .order('sort_order');

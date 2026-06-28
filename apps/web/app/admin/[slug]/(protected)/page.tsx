@@ -21,11 +21,9 @@ export default async function SectionsPage({ params }: { params: { slug: string 
 
   const { data: products } = await supabase
     .from('products')
-    .select('*, product_allergens(allergens(id, name_tr))')
+    .select('*, product_allergens(allergens(id, code, name_tr))')
     .eq('tenant_id', tenant!.id)
     .order('sort_order');
-
-  const { data: allergens } = await supabase.from('allergens').select('*').order('name_tr');
 
   const boundAddSection = addSection.bind(null, tenant!.id, params.slug);
 
@@ -37,7 +35,6 @@ export default async function SectionsPage({ params }: { params: { slug: string 
         slug={params.slug}
         sections={sections ?? []}
         products={products ?? []}
-        allergens={allergens ?? []}
       />
       <form action={boundAddSection} className="flex gap-2 mt-4">
         <input

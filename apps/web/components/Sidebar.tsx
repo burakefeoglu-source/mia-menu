@@ -10,6 +10,7 @@ const groups = [
       { key: 'sections', label: 'Bölümler & ürünler', href: '' },
       { key: 'prices', label: 'Fiyat güncelleme', href: '/prices' },
       { key: 'tags', label: 'Ürün etiketleri', href: '/tags' },
+      { key: 'allergens', label: 'Alerjen listesi', href: '/allergens' },
       { key: 'favorites', label: 'Favori listesi', href: '/favorites' },
     ],
     soon: ['Ürüne ek seçenekler', 'Menü setleri'],

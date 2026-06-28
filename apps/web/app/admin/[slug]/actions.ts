@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { translateToEnglish } from '@/lib/translate';
 
 export async function addSection(tenantId: string, slug: string, formData: FormData) {
   const supabase = createClient();
@@ -186,6 +187,47 @@ export async function upsertTranslation(
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function autoTranslateOne(text: string) {
+  try {
+    const translated = await translateToEnglish(text);
+    return { translated };
+  } catch {
+    return { error: 'Çeviri yapılamadı, lütfen elle gir.' };
+  }
+}
+
+export async function autoTranslateMissing(
+  tenantId: string,
+  slug: string,
+  items: { entityType: 'product' | 'section'; entityId: string; text: string }[]
+) {
+  const supabase = createClient();
+
+  for (const item of items) {
+    try {
+      const translated = await translateToEnglish(item.text);
+      if (translated) {
+        await supabase.from('translations').upsert(
+          {
+            tenant_id: tenantId,
+            entity_type: item.entityType,
+            entity_id: item.entityId,
+            locale: 'en',
+            field: 'name',
+            value: translated,
+          },
+          { onConflict: 'entity_type,entity_id,locale,field' }
+        );
+      }
+    } catch {
+      // bu satırı atla, diğerlerine devam et
+    }
+  }
+
+  revalidatePath(`/admin/${slug}/language`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updateOrderStatus(
   orderId: string,
   slug: string,
@@ -282,6 +324,47 @@ export async function toggleProductTag(
       .match({ product_id: productId, tag_id: tagId });
   }
   revalidatePath(`/admin/${slug}/tags`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+// --- Alerjenler ---
+
+export async function addAllergen(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  const name_tr = (formData.get('name_tr') as string)?.trim();
+  if (!name_tr) return;
+  const name_en = (formData.get('name_en') as string)?.trim() || null;
+  await supabase.from('allergens').insert({ tenant_id: tenantId, name_tr, name_en });
+  revalidatePath(`/admin/${slug}/allergens`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteAllergen(allergenId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('allergens').delete().eq('id', allergenId);
+  revalidatePath(`/admin/${slug}/allergens`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function toggleProductAllergen(
+  productId: string,
+  allergenId: string,
+  slug: string,
+  assign: boolean
+) {
+  const supabase = createClient();
+  if (assign) {
+    await supabase
+      .from('product_allergens')
+      .insert({ product_id: productId, allergen_id: allergenId });
+  } else {
+    await supabase
+      .from('product_allergens')
+      .delete()
+      .match({ product_id: productId, allergen_id: allergenId });
+  }
+  revalidatePath(`/admin/${slug}/allergens`);
+  revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
 

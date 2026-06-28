@@ -5,14 +5,14 @@ import {
   addProduct,
   deleteProduct,
   deleteSection,
-  setProductAllergens,
   updateProduct,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
-import type { Allergen, MenuSection, Product } from '@/types/database';
+import { allergenIcon } from '@/lib/allergenIcons';
+import type { MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
-  product_allergens?: { allergens: { id: string; name_tr: string } }[];
+  product_allergens?: { allergens: { id: string; code: string | null; name_tr: string } }[];
 };
 
 export default function SectionsList({
@@ -20,13 +20,11 @@ export default function SectionsList({
   slug,
   sections,
   products,
-  allergens,
 }: {
   tenantId: string;
   slug: string;
   sections: MenuSection[];
   products: ProductWithAllergens[];
-  allergens: Allergen[];
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
     sections[0] ? { [sections[0].id]: true } : {}
@@ -122,7 +120,6 @@ export default function SectionsList({
                       key={p.id}
                       slug={slug}
                       product={p}
-                      allergens={allergens}
                       onDone={() => setEditingProduct(null)}
                     />
                   ) : (
@@ -148,7 +145,7 @@ export default function SectionsList({
                               key={i}
                               className="ml-1.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
                             >
-                              {pa.allergens.name_tr}
+                              {allergenIcon(pa.allergens.code)} {pa.allergens.name_tr}
                             </span>
                           ))}
                         </span>
@@ -220,18 +217,12 @@ export default function SectionsList({
 function ProductEditForm({
   slug,
   product,
-  allergens,
   onDone,
 }: {
   slug: string;
   product: ProductWithAllergens;
-  allergens: Allergen[];
   onDone: () => void;
 }) {
-  const [selectedAllergens, setSelectedAllergens] = useState<Set<string>>(
-    new Set((product.product_allergens ?? []).map((pa) => pa.allergens.id))
-  );
-
   return (
     <form
       className="flex flex-col gap-2 px-3 py-2.5 border-b border-gray-100 bg-gray-50"
@@ -249,7 +240,6 @@ function ProductEditForm({
           calories: caloriesRaw ? Number(caloriesRaw) : null,
           imageUrl: imageUrl || null,
         });
-        await setProductAllergens(product.id, slug, Array.from(selectedAllergens));
         onDone();
       }}
     >
@@ -279,35 +269,9 @@ function ProductEditForm({
         placeholder="Görsel URL"
         className="border border-gray-200 rounded-md px-2 py-1 text-xs"
       />
-
-      <div>
-        <p className="text-[11px] text-gray-500 mb-1">Alerjenler</p>
-        <div className="flex flex-wrap gap-2">
-          {allergens.map((a) => {
-            const checked = selectedAllergens.has(a.id);
-            return (
-              <label
-                key={a.id}
-                className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 rounded-md px-1.5 py-0.5"
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => {
-                    setSelectedAllergens((prev) => {
-                      const copy = new Set(prev);
-                      if (checked) copy.delete(a.id);
-                      else copy.add(a.id);
-                      return copy;
-                    });
-                  }}
-                />
-                {a.name_tr}
-              </label>
-            );
-          })}
-        </div>
-      </div>
+      <p className="text-[11px] text-gray-400">
+        Alerjenleri &quot;Alerjen listesi&quot; panelinden bu ürüne işaretleyebilirsin.
+      </p>
 
       <div className="flex gap-2 mt-1">
         <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">

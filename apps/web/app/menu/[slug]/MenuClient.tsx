@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
+import { allergenIcon } from '@/lib/allergenIcons';
 import { submitReview } from './actions';
 
 type ProductWithExtras = Product & {
-  product_allergens?: { allergens: { name_tr: string; name_en: string } }[];
+  product_allergens?: { allergens: { code: string | null; name_tr: string; name_en: string } }[];
   product_tags?: { tags: { name: string } }[];
 };
 
@@ -309,6 +310,7 @@ export default function MenuClient({
                     key={i}
                     className="text-xs bg-amber-50 text-amber-800 px-2 py-0.5 rounded-md"
                   >
+                    {allergenIcon(pa.allergens.code)}{' '}
                     {lang === 'tr' ? pa.allergens.name_tr : pa.allergens.name_en}
                   </span>
                 ))
