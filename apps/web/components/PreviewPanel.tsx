@@ -17,8 +17,8 @@ export default function PreviewPanel({ slug }: { slug: string }) {
         </button>
       </div>
       <div
-        className="border border-gray-200 rounded-lg overflow-hidden"
-        style={{ height: 500 }}
+        className="border border-gray-200 rounded-lg overflow-hidden w-full"
+        style={{ aspectRatio: '9 / 16' }}
       >
         <iframe key={reloadKey} src={`/menu/${slug}`} className="w-full h-full" />
       </div>

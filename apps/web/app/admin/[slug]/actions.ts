@@ -33,6 +33,43 @@ export async function addProduct(
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function updateSectionName(sectionId: string, slug: string, name: string) {
+  const supabase = createClient();
+  await supabase.from('menu_sections').update({ name }).eq('id', sectionId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteSection(sectionId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('menu_sections').delete().eq('id', sectionId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function updateProduct(
+  productId: string,
+  slug: string,
+  data: { name: string; price: number; calories: number | null }
+) {
+  const supabase = createClient();
+  await supabase
+    .from('products')
+    .update({ name: data.name, price: data.price, calories: data.calories })
+    .eq('id', productId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/admin/${slug}/prices`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteProduct(productId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('products').delete().eq('id', productId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/admin/${slug}/prices`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updatePrice(productId: string, slug: string, price: number) {
   const supabase = createClient();
 
@@ -137,5 +174,54 @@ export async function updateOrderStatus(
 
   revalidatePath(`/admin/${slug}/orders`);
   revalidatePath(`/admin/${slug}/reports`);
+}
+
+export async function updateQrStyle(
+  tenantId: string,
+  slug: string,
+  style: 'square' | 'rounded' | 'dot'
+) {
+  const supabase = createClient();
+  await supabase.from('tenants').update({ qr_style: style }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/qr`);
+}
+
+export async function updateQrLogo(tenantId: string, slug: string, logoUrl: string) {
+  const supabase = createClient();
+  await supabase
+    .from('tenants')
+    .update({ logo_url: logoUrl || null })
+    .eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/qr`);
+  revalidatePath(`/admin/${slug}/settings`);
+}
+
+export async function generateTables(tenantId: string, slug: string, count: number) {
+  const supabase = createClient();
+
+  const { data: existing } = await supabase
+    .from('tables')
+    .select('label')
+    .eq('tenant_id', tenantId);
+
+  const existingNumbers = (existing ?? [])
+    .map((t) => parseInt(t.label.replace(/[^0-9]/g, ''), 10))
+    .filter((n) => !isNaN(n));
+  const startFrom = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+
+  const rows = Array.from({ length: count }, (_, i) => ({
+    tenant_id: tenantId,
+    label: `Masa ${startFrom + i}`,
+  }));
+
+  await supabase.from('tables').insert(rows);
+
+  revalidatePath(`/admin/${slug}/qr`);
+}
+
+export async function deleteTable(tableId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('tables').delete().eq('id', tableId);
+  revalidatePath(`/admin/${slug}/qr`);
 }
 

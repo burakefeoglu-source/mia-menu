@@ -7,6 +7,7 @@ export type Tenant = {
   logo_url: string | null;
   default_locale: string;
   is_active: boolean;
+  qr_style: 'square' | 'rounded' | 'dot';
 };
 
 export type MenuSection = {
