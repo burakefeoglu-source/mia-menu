@@ -438,6 +438,17 @@ export async function updateMenuLayout(
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function updateSectionNav(
+  tenantId: string,
+  slug: string,
+  nav: 'tabs' | 'grid'
+) {
+  const supabase = createClient();
+  await supabase.from('tenants').update({ section_nav: nav }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/design`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updateSectionDisplayStyle(
   sectionId: string,
   slug: string,

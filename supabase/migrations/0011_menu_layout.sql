@@ -4,3 +4,6 @@
 
 alter table tenants add column menu_layout text not null default 'classic'
   check (menu_layout in ('classic', 'dark', 'minimal'));
+
+alter table tenants add column section_nav text not null default 'tabs'
+  check (section_nav in ('tabs', 'grid'));

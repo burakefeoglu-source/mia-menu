@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import ThemePicker from '@/components/ThemePicker';
 import SectionStyleList from '@/components/SectionStyleList';
 import LayoutPicker from '@/components/LayoutPicker';
+import SectionNavPicker from '@/components/SectionNavPicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +11,7 @@ export default async function DesignPage({ params }: { params: { slug: string } 
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, theme_color, menu_layout')
+    .select('id, theme_color, menu_layout, section_nav')
     .eq('slug', params.slug)
     .single();
 
@@ -28,7 +29,8 @@ export default async function DesignPage({ params }: { params: { slug: string } 
       </p>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-3">Menü düzeni</p>
+        <p className="text-sm font-medium mb-1">Menü düzeni</p>
+        <p className="text-xs text-gray-400 mb-3">Genel görünüm şablonu</p>
         <LayoutPicker
           tenantId={tenant!.id}
           slug={params.slug}
@@ -37,12 +39,24 @@ export default async function DesignPage({ params }: { params: { slug: string } 
       </div>
 
       <div className="mb-8">
-        <p className="text-sm font-medium mb-2">Renk teması</p>
+        <p className="text-sm font-medium mb-1">Bölüm navigasyonu</p>
+        <p className="text-xs text-gray-400 mb-3">Müşteri menüye girdiğinde bölümleri nasıl görsün?</p>
+        <SectionNavPicker
+          tenantId={tenant!.id}
+          slug={params.slug}
+          initialNav={(tenant!.section_nav as 'tabs' | 'grid') ?? 'tabs'}
+        />
+      </div>
+
+      <div className="mb-8">
+        <p className="text-sm font-medium mb-1">Renk teması</p>
+        <p className="text-xs text-gray-400 mb-3">Butonlar, seçili durum ve vurgu rengi</p>
         <ThemePicker tenantId={tenant!.id} slug={params.slug} initialTheme={tenant!.theme_color} />
       </div>
 
       <div>
-        <p className="text-sm font-medium mb-3">Bölüm iç tasarımı</p>
+        <p className="text-sm font-medium mb-1">Bölüm iç tasarımı</p>
+        <p className="text-xs text-gray-400 mb-3">Her bölümün ürünleri nasıl listelensin?</p>
         <SectionStyleList slug={params.slug} sections={sections ?? []} />
       </div>
     </div>

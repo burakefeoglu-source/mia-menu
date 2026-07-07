@@ -11,6 +11,7 @@ export type Tenant = {
   qr_style: 'square' | 'rounded' | 'dot';
   theme_color: string;
   menu_layout: 'classic' | 'dark' | 'minimal';
+  section_nav: 'tabs' | 'grid';
 };
 
 export type MenuSection = {

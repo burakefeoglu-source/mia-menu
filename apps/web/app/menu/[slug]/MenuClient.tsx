@@ -32,8 +32,11 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   translations: Translation[];
 }) {
   const layout: Layout = (tenant.menu_layout as Layout) ?? 'classic';
+  const sectionNav = (tenant.section_nav as 'tabs' | 'grid') ?? 'tabs';
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
-  const [activeSection, setActiveSection] = useState(sections[0]?.id ?? '');
+  const [activeSection, setActiveSection] = useState<string | null>(
+    sectionNav === 'grid' ? null : (sections[0]?.id ?? '')
+  );
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
   const [showReview, setShowReview] = useState(false);
@@ -62,6 +65,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const displayStyle = activeSectionObj?.display_style ?? 'list_image';
 
   const filtered = useMemo(() => {
+    if (!activeSection) return [];
     return products.filter((p) => {
       const matchesSection = p.section_id === activeSection;
       const displayName = nameFor('product', p.id, p.name);
@@ -166,6 +170,56 @@ export default function MenuClient({ tenant, sections, products, announcement, t
     </div>
   );
 
+  const sectionGridView = sectionNav === 'grid' && activeSection === null && (
+    <div className="p-4">
+      <div className="grid grid-cols-2 gap-3">
+        {sections.map((s) => {
+          const cover = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(s.id)}
+              className="border border-gray-200 rounded-xl overflow-hidden text-left"
+            >
+              {cover
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={cover} alt={s.name} className="w-full h-24 object-cover" />
+                : <div className={`w-full h-24 ${theme.headerBg}`} />}
+              <div className="p-2.5">
+                <p className="text-sm font-semibold text-gray-900">{nameFor('section', s.id, s.name)}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {products.filter((p) => p.section_id === s.id).length} ürün
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const backButton = sectionNav === 'grid' && activeSection !== null && (
+    <button
+      onClick={() => setActiveSection(null)}
+      className="flex items-center gap-1.5 text-sm text-gray-500 px-4 py-2"
+    >
+      ← Bölümler
+    </button>
+  );
+
+  const tabsNav = sectionNav === 'tabs' && (
+    <div className="flex gap-2 overflow-x-auto mb-3 pb-1">
+      {sections.map((s) => (
+        <button key={s.id} onClick={() => setActiveSection(s.id)}
+          className={`whitespace-nowrap text-sm px-3 py-1.5 rounded-full border ${
+            activeSection === s.id ? `${theme.accentBg} text-white ${theme.accentBorder}` : 'bg-white text-gray-700 border-gray-200'
+          }`}>
+          {nameFor('section', s.id, s.name)}
+        </button>
+      ))}
+    </div>
+  );
+
   /* ─── LAYOUT: DARK ─── */
   if (layout === 'dark') {
     return (
@@ -178,45 +232,67 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           <div className="absolute top-3 right-3">{langToggle}</div>
           <div className="px-4 py-3">
             <h1 className="text-lg font-semibold text-white">{tenant.name}</h1>
-            <span className="text-xs text-white/60">İstanbul</span>
           </div>
-          <div className="flex overflow-x-auto border-t border-white/10">
-            {sections.map((s) => (
-              <button key={s.id} onClick={() => setActiveSection(s.id)}
-                className={`whitespace-nowrap text-xs px-4 py-2.5 flex-shrink-0 border-b-2 transition-colors ${
-                  activeSection === s.id ? 'text-white border-white font-medium' : 'text-white/40 border-transparent'
-                }`}>
-                {nameFor('section', s.id, s.name)}
-              </button>
-            ))}
-          </div>
+          {sectionNav === 'tabs' && (
+            <div className="flex overflow-x-auto border-t border-white/10">
+              {sections.map((s) => (
+                <button key={s.id} onClick={() => setActiveSection(s.id)}
+                  className={`whitespace-nowrap text-xs px-4 py-2.5 flex-shrink-0 border-b-2 transition-colors ${
+                    activeSection === s.id ? 'text-white border-white font-medium' : 'text-white/40 border-transparent'
+                  }`}>
+                  {nameFor('section', s.id, s.name)}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         {announcementBanner}
-
-        <div className="p-3 flex flex-col gap-2">
-          {filtered.map((p) => (
-            <button key={p.id} onClick={() => setSelected(p)} className="bg-white rounded-xl overflow-hidden flex text-left shadow-sm">
-              <div className="flex-1 p-3">
-                <p className="text-sm font-semibold text-gray-900">{nameFor('product', p.id, p.name)}</p>
-                {p.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.description}</p>}
-                <p className="text-sm font-bold text-gray-900 mt-1.5">{p.price} ₺</p>
-              </div>
-              {p.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.image_url} alt={p.name} className="w-20 h-full object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-20 bg-gray-100 flex-shrink-0" />
-              )}
-            </button>
-          ))}
-          {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>}
-        </div>
+        {sectionNav === 'grid' && activeSection === null ? (
+          <div className="p-3">
+            <div className="grid grid-cols-2 gap-3">
+              {sections.map((s) => {
+                const cover = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+                return (
+                  <button key={s.id} onClick={() => setActiveSection(s.id)} className="bg-white rounded-xl overflow-hidden text-left shadow-sm">
+                    {cover
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={cover} alt={s.name} className="w-full h-24 object-cover" />
+                      : <div className="w-full h-24 bg-gray-800" />}
+                    <div className="p-2.5">
+                      <p className="text-sm font-semibold">{nameFor('section', s.id, s.name)}</p>
+                      <p className="text-xs text-gray-400">{products.filter((p) => p.section_id === s.id).length} ürün</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
+            {backButton && <div className="bg-gray-100">{backButton}</div>}
+            <div className="p-3 flex flex-col gap-2">
+              {filtered.map((p) => (
+                <button key={p.id} onClick={() => setSelected(p)} className="bg-white rounded-xl overflow-hidden flex text-left shadow-sm">
+                  <div className="flex-1 p-3">
+                    <p className="text-sm font-semibold text-gray-900">{nameFor('product', p.id, p.name)}</p>
+                    {p.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{p.description}</p>}
+                    <p className="text-sm font-bold text-gray-900 mt-1.5">{p.price} ₺</p>
+                  </div>
+                  {p.image_url
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={p.image_url} alt={p.name} className="w-20 h-full object-cover flex-shrink-0" />
+                    : <div className="w-20 bg-gray-100 flex-shrink-0" />}
+                </button>
+              ))}
+              {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>}
+            </div>
+          </>
+        )}
 
         <div className="px-3 pb-4">
           <button onClick={() => setShowReview(true)} className="w-full text-sm text-gray-500 border border-gray-200 rounded-md py-2 bg-white">★ {t.leaveReview}</button>
         </div>
-
         {modal}{reviewModal}
       </main>
     );
@@ -252,7 +328,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} className="w-full bg-gray-100 border-0 rounded-lg px-3 py-2 text-sm mb-4 focus:ring-1 focus:ring-gray-300" />
 
           <div className="flex gap-2 overflow-x-auto pb-3 mb-1">
-            {sections.map((s) => (
+            {sectionNav === 'tabs' && sections.map((s) => (
               <button key={s.id} onClick={() => setActiveSection(s.id)}
                 className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full font-medium transition-colors flex-shrink-0 ${
                   activeSection === s.id ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'
@@ -266,7 +342,28 @@ export default function MenuClient({ tenant, sections, products, announcement, t
         {announcementBanner}
 
         <div className="px-4 pb-4">
-          {displayStyle === 'grid' ? (
+          {sectionNav === 'grid' && activeSection === null ? (
+            <div className="grid grid-cols-2 gap-3">
+              {sections.map((s) => {
+                const cover = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+                return (
+                  <button key={s.id} onClick={() => setActiveSection(s.id)} className="border border-gray-100 rounded-xl overflow-hidden text-left">
+                    {cover
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={cover} alt={s.name} className="w-full h-24 object-cover" />
+                      : <div className="w-full h-24 bg-gray-100" />}
+                    <div className="p-2.5">
+                      <p className="text-sm font-semibold">{nameFor('section', s.id, s.name)}</p>
+                      <p className="text-xs text-gray-400">{products.filter((p) => p.section_id === s.id).length} ürün</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              {backButton}
+              {displayStyle === 'grid' ? (
             <div className="grid grid-cols-2 gap-3">
               {filtered.map((p) => (
                 <button key={p.id} onClick={() => setSelected(p)} className="border border-gray-100 rounded-xl overflow-hidden text-left">
@@ -323,6 +420,8 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           )}
 
           <button onClick={() => setShowReview(true)} className="w-full text-sm text-gray-400 border border-gray-100 rounded-lg py-2 mt-4">★ {t.leaveReview}</button>
+            </>
+          )}
         </div>
 
         {modal}{reviewModal}
@@ -369,18 +468,14 @@ export default function MenuClient({ tenant, sections, products, announcement, t
 
       <div className="p-4">
         <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm mb-3" />
-        <div className="flex gap-2 overflow-x-auto mb-3 pb-1">
-          {sections.map((s) => (
-            <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`whitespace-nowrap text-sm px-3 py-1.5 rounded-full border ${
-                activeSection === s.id ? `${theme.accentBg} text-white ${theme.accentBorder}` : 'bg-white text-gray-700 border-gray-200'
-              }`}>
-              {nameFor('section', s.id, s.name)}
-            </button>
-          ))}
-        </div>
+        {tabsNav}
 
-        {displayStyle === 'grid' ? (
+        {sectionGridView}
+
+        {(sectionNav === 'tabs' || activeSection !== null) && (
+          <>
+            {backButton}
+            {displayStyle === 'grid' ? (
           <div className="grid grid-cols-2 gap-2">
             {filtered.map((p) => (
               <button key={p.id} onClick={() => setSelected(p)} className="border border-gray-200 rounded-md overflow-hidden text-left">
@@ -415,8 +510,10 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             ))}
           </div>
         )}
-        {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>}
+        {filtered.length === 0 && activeSection !== null && <p className="text-sm text-gray-400 text-center py-8">{t.notFound}</p>}
         <button onClick={() => setShowReview(true)} className="w-full text-sm text-gray-500 border border-gray-200 rounded-md py-2 mt-4">★ {t.leaveReview}</button>
+          </>
+        )}
       </div>
 
       {modal}{reviewModal}
