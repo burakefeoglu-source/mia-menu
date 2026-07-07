@@ -19,6 +19,7 @@ const groups = [
     title: '2. Tasarım',
     items: [
       { key: 'design', label: 'Menü tasarım', href: '/design' },
+      { key: 'print', label: 'Baskı', href: '/print' },
       { key: 'qr', label: 'Karekod', href: '/qr' },
       { key: 'language', label: 'Dil ayarları', href: '/language' },
     ],
