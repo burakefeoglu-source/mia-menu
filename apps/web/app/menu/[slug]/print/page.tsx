@@ -213,7 +213,7 @@ export default async function PrintMenuPage({
                         p.product_allergens &&
                         p.product_allergens.length > 0 && (
                           <div className="allergens">
-                            {p.product_allergens.map((pa, i) => (
+                            {p.product_allergens.map((pa: { allergens: { code: string | null; name_tr: string } }, i: number) => (
                               <span key={i} className="allergen">
                                 {pa.allergens.name_tr}
                               </span>
