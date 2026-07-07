@@ -10,6 +10,7 @@ import {
 } from '@/app/admin/[slug]/actions';
 import { AllergenIcon } from '@/lib/allergenIcons';
 import ImageUploader from '@/components/ImageUploader';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import type { MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
@@ -243,6 +244,7 @@ function ProductEditForm({
           calories: caloriesRaw ? Number(caloriesRaw) : null,
           imageUrl: imageUrl || null,
         });
+        broadcastPreviewRefresh();
         onDone();
       }}
     >

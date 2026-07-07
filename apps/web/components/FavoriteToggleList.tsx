@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toggleFavorite } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import type { Product } from '@/types/database';
 
 type ProductWithSection = Product & { section_name: string };
@@ -26,6 +27,7 @@ export default function FavoriteToggleList({
       return copy;
     });
     await toggleFavorite(productId, slug, next);
+    broadcastPreviewRefresh();
   }
 
   return (

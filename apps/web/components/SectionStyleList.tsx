@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateSectionDisplayStyle } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import type { MenuSection } from '@/types/database';
 
 type Style = MenuSection['display_style'];
@@ -95,6 +96,7 @@ export default function SectionStyleList({
                   onClick={() => {
                     setStyles((prev) => ({ ...prev, [s.id]: opt.value }));
                     updateSectionDisplayStyle(s.id, slug, opt.value);
+                    broadcastPreviewRefresh();
                   }}
                   className={`flex flex-col items-center gap-1.5 rounded-md border-2 p-1.5 transition-colors ${
                     active

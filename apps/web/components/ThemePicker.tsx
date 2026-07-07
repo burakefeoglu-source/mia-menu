@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateThemeColor } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import { MENU_THEMES, type MenuThemeKey } from '@/lib/menuThemes';
 
 export default function ThemePicker({
@@ -26,6 +27,7 @@ export default function ThemePicker({
             onClick={() => {
               setSelected(key);
               updateThemeColor(tenantId, slug, key);
+              broadcastPreviewRefresh();
             }}
             className={`flex flex-col items-center gap-1.5 p-2 rounded-md border-2 ${
               active ? 'border-gray-800' : 'border-transparent'

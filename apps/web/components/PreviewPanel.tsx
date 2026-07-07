@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { listenPreviewRefresh } from '@/lib/previewChannel';
 
 const DESIGN_WIDTH = 375;
 const DESIGN_HEIGHT = Math.round((DESIGN_WIDTH * 16) / 9);
@@ -8,6 +9,7 @@ const DESIGN_HEIGHT = Math.round((DESIGN_WIDTH * 16) / 9);
 export default function PreviewPanel({ slug }: { slug: string }) {
   const [reloadKey, setReloadKey] = useState(0);
   const [scale, setScale] = useState(1);
+  const [flash, setFlash] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,6 +21,15 @@ export default function PreviewPanel({ slug }: { slug: string }) {
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
+  useEffect(() => {
+    const unlisten = listenPreviewRefresh(() => {
+      setReloadKey((k) => k + 1);
+      setFlash(true);
+      setTimeout(() => setFlash(false), 600);
+    });
+    return unlisten;
   }, []);
 
   return (
@@ -34,8 +45,11 @@ export default function PreviewPanel({ slug }: { slug: string }) {
       </div>
       <div
         ref={wrapperRef}
-        className="border border-gray-200 rounded-lg overflow-hidden w-full"
-        style={{ aspectRatio: '9 / 16' }}
+        className="rounded-lg overflow-hidden w-full transition-all duration-300"
+        style={{
+          aspectRatio: '9 / 16',
+          border: flash ? '2px solid #c2185b' : '1px solid #e5e7eb',
+        }}
       >
         <div
           style={{
@@ -53,7 +67,7 @@ export default function PreviewPanel({ slug }: { slug: string }) {
         </div>
       </div>
       <p className="text-[11px] text-gray-400 mt-2 text-center">
-        Müşterilerinizin gördüğü görünüm
+        Değişiklikler otomatik yansır
       </p>
     </aside>
   );

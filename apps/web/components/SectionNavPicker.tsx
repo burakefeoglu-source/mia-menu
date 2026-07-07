@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateSectionNav } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 
 type Nav = 'tabs' | 'grid';
 
@@ -77,6 +78,7 @@ export default function SectionNavPicker({
             onClick={() => {
               setSelected(opt.value);
               updateSectionNav(tenantId, slug, opt.value);
+              broadcastPreviewRefresh();
             }}
             className={`flex flex-col rounded-lg border-2 overflow-hidden transition-colors text-left`}
             style={{ width: 160, borderColor: active ? '#e11d48' : '#e5e7eb' }}

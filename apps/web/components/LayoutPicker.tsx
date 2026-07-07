@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateMenuLayout } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 
 type Layout = 'classic' | 'dark' | 'minimal';
 
@@ -100,6 +101,7 @@ export default function LayoutPicker({
             onClick={() => {
               setSelected(l.value);
               updateMenuLayout(tenantId, slug, l.value);
+              broadcastPreviewRefresh();
             }}
             className={`flex flex-col rounded-lg border-2 overflow-hidden transition-colors ${
               active ? 'border-rose-600' : 'border-gray-200'

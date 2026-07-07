@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updatePrice } from '@/app/admin/[slug]/actions';
+import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import type { Product } from '@/types/database';
 
 type ProductWithSection = Product & { section_name?: string };
@@ -44,6 +45,7 @@ function PriceRow({ slug, product }: { slug: string; product: ProductWithSection
         <button
           onClick={async () => {
             await updatePrice(product.id, slug, price);
+            broadcastPreviewRefresh();
             setSaved(true);
             setTimeout(() => setSaved(false), 1200);
           }}
