@@ -10,6 +10,7 @@ export type Tenant = {
   is_active: boolean;
   qr_style: 'square' | 'rounded' | 'dot';
   theme_color: string;
+  menu_layout: 'classic' | 'dark' | 'minimal';
 };
 
 export type MenuSection = {

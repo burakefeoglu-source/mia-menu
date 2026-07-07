@@ -427,6 +427,17 @@ export async function updateThemeColor(tenantId: string, slug: string, theme: st
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function updateMenuLayout(
+  tenantId: string,
+  slug: string,
+  layout: 'classic' | 'dark' | 'minimal'
+) {
+  const supabase = createClient();
+  await supabase.from('tenants').update({ menu_layout: layout }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/design`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updateSectionDisplayStyle(
   sectionId: string,
   slug: string,
