@@ -22,7 +22,7 @@ export default function PreviewPanel({ slug }: { slug: string }) {
   }, []);
 
   return (
-    <aside className="w-44 flex-shrink-0">
+    <aside className="w-60 flex-shrink-0">
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs text-gray-500">Canlı önizleme</p>
         <button

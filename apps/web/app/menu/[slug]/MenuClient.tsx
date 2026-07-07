@@ -114,7 +114,7 @@ export default function MenuClient({
           <img
             src={tenant.cover_image_url}
             alt={tenant.name}
-            className="w-full h-32 object-cover"
+            className="w-full h-48 object-cover"
           />
         )}
         <div className="p-4">
