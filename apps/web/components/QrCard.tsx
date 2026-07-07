@@ -18,11 +18,15 @@ export default function QrCard({
   url,
   style,
   logoUrl,
+  fgColor = '#111827',
+  bgColor = '#ffffff',
 }: {
   label: string;
   url: string;
   style: Style;
   logoUrl: string;
+  fgColor?: string;
+  bgColor?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,10 +46,10 @@ export default function QrCard({
         data: url,
         margin: 6,
         qrOptions: { errorCorrectionLevel: 'H' },
-        dotsOptions: { type: preset.dots as never, color: '#1f2937' },
-        cornersSquareOptions: { type: preset.cornersSquare as never, color: '#1f2937' },
-        cornersDotOptions: { type: preset.cornersDot as never, color: '#1f2937' },
-        backgroundOptions: { color: '#ffffff' },
+        dotsOptions: { type: preset.dots as never, color: fgColor },
+        cornersSquareOptions: { type: preset.cornersSquare as never, color: fgColor },
+        cornersDotOptions: { type: preset.cornersDot as never, color: fgColor },
+        backgroundOptions: { color: bgColor },
         image: logoUrl || undefined,
         imageOptions: {
           crossOrigin: 'anonymous',
@@ -65,7 +69,7 @@ export default function QrCard({
     return () => {
       cancelled = true;
     };
-  }, [url, style, logoUrl]);
+  }, [url, style, logoUrl, fgColor, bgColor]);
 
   async function downloadPng() {
     await qrRef.current?.download({ name: label, extension: 'png' });

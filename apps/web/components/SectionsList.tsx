@@ -9,6 +9,7 @@ import {
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
 import { AllergenIcon } from '@/lib/allergenIcons';
+import ImageUploader from '@/components/ImageUploader';
 import type { MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
@@ -224,6 +225,8 @@ function ProductEditForm({
   product: ProductWithAllergens;
   onDone: () => void;
 }) {
+  const [imageUrl, setImageUrl] = useState(product.image_url ?? '');
+
   return (
     <form
       className="flex flex-col gap-2 px-3 py-2.5 border-b border-gray-100 bg-gray-50"
@@ -233,7 +236,6 @@ function ProductEditForm({
         const name = (form.elements.namedItem('name') as HTMLInputElement).value;
         const price = Number((form.elements.namedItem('price') as HTMLInputElement).value);
         const caloriesRaw = (form.elements.namedItem('calories') as HTMLInputElement).value;
-        const imageUrl = (form.elements.namedItem('image_url') as HTMLInputElement).value;
 
         await updateProduct(product.id, slug, {
           name,
@@ -264,12 +266,14 @@ function ProductEditForm({
           className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
         />
       </div>
-      <input
-        name="image_url"
-        defaultValue={product.image_url ?? ''}
-        placeholder="Görsel URL"
-        className="border border-gray-200 rounded-md px-2 py-1 text-xs"
+
+      <ImageUploader
+        folder="products"
+        currentUrl={imageUrl}
+        onUploaded={(url) => setImageUrl(url)}
+        label="Fotoğraf yükle"
       />
+
       <p className="text-[11px] text-gray-400">
         Alerjenleri &quot;Alerjen listesi&quot; panelinden bu ürüne işaretleyebilirsin.
       </p>
