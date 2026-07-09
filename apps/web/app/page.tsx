@@ -55,13 +55,12 @@ export default function LandingPage() {
       <section className="px-6 py-16 border-b border-gray-100">
         <h2 className="text-2xl font-semibold text-center mb-2">Her şey dahil, hiçbir şey karmaşık değil</h2>
         <p className="text-center text-gray-500 text-sm mb-10">Sadece menünüzü girin, biz gerisini halledelim</p>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           {[
             ['🔲', 'QR kod yönetimi', 'Masa başına ayrı QR veya tek genel kod. Logo ekleyin, renk seçin, PDF indirin.'],
-            ['🛡️', '14 resmi alerjen', 'Zorunlu 14 alerjen listesi hazır. Her ürüne tek tıkla atayın, yasal bildirimi otomatik karşılayın.'],
+            ['🛡️', '14 resmi alerjen', 'Zorunlu 14 alerjen listesi hazır. Her ürüne tek tıkla atayın, yasal bildirimi karşılayın.'],
             ['🌐', 'Türkçe + İngilizce', 'Menünüz iki dilde. Yabancı misafirler için ayrı uygulama gerekmez.'],
-            ['🖨️', 'Baskıya hazır', '6 şablon, A3/A4/A5. Renk seçin, PDF alın. Giriş kapısı ve masa zorunluluğunu karşılayın.'],
+            ['🖨️', 'Baskıya hazır', '6 şablon, A3/A4/A5. Renk seçin, PDF alın. Kağıt menü yedeğiniz hazır.'],
             ['🎨', 'Menü tasarımı', '3 farklı düzen, 8 renk teması. Markanıza uygun görünüm.'],
             ['📷', 'Ürün görselleri', 'Fotoğraf yükleyin, biz sıkıştıralım. Hızlı yüklenen WebP formatı.'],
           ].map(([icon, title, desc]) => (
@@ -71,34 +70,6 @@ export default function LandingPage() {
               <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
             </div>
           ))}
-        </div>
-
-        {/* Baskı yasal uyarısı */}
-        <div className="max-w-2xl mx-auto bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
-          <span className="text-blue-600 text-lg flex-shrink-0 mt-0.5">📋</span>
-          <div>
-            <p className="text-xs font-medium text-blue-800 mb-1">Tarife ve fiyat listesi zorunluluğu</p>
-            <p className="text-xs text-blue-700 leading-relaxed">
-              Lokanta, restoran, kafe, pastane ve benzeri işyerlerinde tarife ve fiyat listesinin
-              işyerinin <strong>giriş kapısının önüne ve masaların üstüne</strong>, tüketiciler tarafından
-              kolaylıkla görülebilir ve okunabilir şekilde asılması zorunludur. mia.menu&apos;nun baskı
-              şablonları bu yükümlülüğü karşılamak için tasarlanmıştır.
-            </p>
-          </div>
-        </div>
-
-        {/* Alerjen yasal uyarısı */}
-        <div className="max-w-2xl mx-auto bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 mt-3">
-          <span className="text-amber-600 text-lg flex-shrink-0 mt-0.5">⚠️</span>
-          <div>
-            <p className="text-xs font-medium text-amber-800 mb-1">Alerjen bildirim zorunluluğu</p>
-            <p className="text-xs text-amber-700 leading-relaxed">
-              T.C. Tarım ve Orman Bakanlığı&apos;nın gıda mevzuatı uyarınca gıda işletmecileri,
-              tüketicilere sundukları ürünlerdeki <strong>14 zorunlu alerjeni</strong> açıkça bildirmekle
-              yükümlüdür. mia.menu bu bildirimi dijital menünüzde ve baskı çıktılarınızda otomatik olarak
-              sağlar.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -125,7 +96,7 @@ export default function LandingPage() {
       <section className="px-6 py-16 border-b border-gray-100">
         <h2 className="text-2xl font-semibold text-center mb-2">Fiyatlandırma</h2>
         <p className="text-center text-gray-500 text-sm mb-10">5 gün ücretsiz, sonra yıllık abonelik</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <p className="text-sm font-medium mb-2">Aylık</p>
             <p className="text-3xl font-semibold mb-1">300 <span className="text-base font-normal text-gray-500">₺/ay</span></p>

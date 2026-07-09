@@ -37,10 +37,19 @@ export default async function AllergensPage({ params }: { params: { slug: string
   return (
     <div>
       <h2 className="text-base font-medium mb-1">Alerjen listesi</h2>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-gray-500 mb-3">
         İlk 8 tanesi yasal standart liste (silinemez). İstediğin kadar kendi alerjenini
         ekleyebilirsin.
       </p>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2.5 mb-5">
+        <span className="text-amber-500 flex-shrink-0 mt-0.5">⚠️</span>
+        <p className="text-xs text-amber-800 leading-relaxed">
+          <strong>Yasal zorunluluk:</strong> T.C. Tarım ve Orman Bakanlığı&apos;nın gıda mevzuatı
+          uyarınca gıda işletmecileri, tüketicilere sundukları ürünlerdeki <strong>14 zorunlu
+          alerjeni</strong> açıkça bildirmekle yükümlüdür. Her ürüne ilgili alerjenleri
+          işaretlemeniz, hem yasal uyumu hem de müşteri güvenliğini sağlar.
+        </p>
+      </div>
 
       <div className="flex flex-wrap gap-2 mb-5">
         {(allergens ?? []).map((a) => (
