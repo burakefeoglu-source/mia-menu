@@ -418,6 +418,59 @@ export async function deleteLocation(locationId: string, slug: string) {
   revalidatePath(`/admin/${slug}/locations`);
 }
 
+// --- İçe aktarma ---
+
+export async function importProducts(
+  tenantId: string,
+  slug: string,
+  rows: { sectionName: string; name: string; price: number; description?: string; calories?: number }[]
+) {
+  const supabase = createClient();
+
+  // Mevcut bölümleri çek
+  const { data: existingSections } = await supabase
+    .from('menu_sections')
+    .select('id, name')
+    .eq('tenant_id', tenantId);
+
+  const sectionMap = new Map((existingSections ?? []).map((s) => [s.name.trim().toLowerCase(), s.id]));
+
+  // Yeni bölüm isimleri
+  const newSectionNames = [...new Set(rows.map((r) => r.sectionName.trim()))]
+    .filter((name) => !sectionMap.has(name.toLowerCase()));
+
+  if (newSectionNames.length > 0) {
+    const { data: created } = await supabase
+      .from('menu_sections')
+      .insert(newSectionNames.map((name, i) => ({
+        tenant_id: tenantId,
+        name,
+        sort_order: (existingSections?.length ?? 0) + i + 1,
+      })))
+      .select('id, name');
+
+    (created ?? []).forEach((s) => sectionMap.set(s.name.trim().toLowerCase(), s.id));
+  }
+
+  // Ürünleri ekle
+  const products = rows.map((r) => ({
+    tenant_id: tenantId,
+    section_id: sectionMap.get(r.sectionName.trim().toLowerCase()),
+    name: r.name,
+    price: r.price,
+    description: r.description || null,
+    calories: r.calories || null,
+    sort_order: 0,
+  })).filter((p) => p.section_id);
+
+  const { error } = await supabase.from('products').insert(products);
+  if (error) return { error: 'Aktarım sırasında hata oluştu.' };
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+  return { imported: products.length };
+}
+
 // --- Menü tasarım ---
 
 export async function updateThemeColor(tenantId: string, slug: string, theme: string) {
