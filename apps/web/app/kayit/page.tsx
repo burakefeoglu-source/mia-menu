@@ -1,13 +1,13 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useFormState } from 'react-dom';
 import Link from 'next/link';
 import { registerRestaurant, type RegisterResult } from './actions';
 
 const initialState: RegisterResult = {};
 
 export default function RegisterPage() {
-  const [state, action, pending] = useActionState(registerRestaurant, initialState);
+  const [state, action, pending] = useFormState(registerRestaurant, initialState);
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

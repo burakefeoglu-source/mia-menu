@@ -32,7 +32,7 @@ export default function LoginPage() {
       .select('tenants(slug)')
       .maybeSingle();
 
-    const slug = (staff?.tenants as { slug: string } | null)?.slug;
+    const slug = (staff?.tenants as unknown as { slug: string } | null)?.slug;
     router.push(slug ? `/admin/${slug}` : '/');
     router.refresh();
   }
