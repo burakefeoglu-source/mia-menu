@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
 import { AllergenIcon } from '@/lib/allergenIcons';
 import { getTheme } from '@/lib/menuThemes';
