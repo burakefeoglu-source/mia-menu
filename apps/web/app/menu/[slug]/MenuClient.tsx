@@ -54,6 +54,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [posterDismissed, setPosterDismissed] = useState(false);
   function trackProductClick(product: ProductWithExtras) {
     setSelected(product);
     fetch('/api/track', {
