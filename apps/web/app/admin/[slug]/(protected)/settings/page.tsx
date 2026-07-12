@@ -68,10 +68,32 @@ export default async function SettingsPage({ params }: { params: { slug: string 
             Google İşletme profili → Yorumlar → &quot;Yorum al&quot; linki
           </p>
         </div>
-        <button
-          type="submit"
-          className="self-start text-sm bg-rose-600 text-white px-3 py-1.5 rounded-md mt-1"
-        >
+
+        <div className="border-t border-gray-100 pt-4">
+          <p className="text-sm font-medium mb-1">WhatsApp bildirim</p>
+          <p className="text-xs text-gray-400 mb-3">
+            Müşteri görüş bıraktığında mesaj alın.{' '}
+            <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noreferrer" className="text-rose-600 underline">CallMeBot kurulum →</a>
+          </p>
+          <div className="flex flex-col gap-2">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Telefon numarası</label>
+              <input name="notification_phone"
+                defaultValue={(tenant as { notification_phone?: string })?.notification_phone ?? ''}
+                placeholder="905001234567 (+ olmadan)"
+                className="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">CallMeBot API key</label>
+              <input name="callmebot_api_key"
+                defaultValue={(tenant as { callmebot_api_key?: string })?.callmebot_api_key ?? ''}
+                placeholder="CallMeBot'tan gelen API key"
+                className="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" className="self-start text-sm bg-rose-600 text-white px-3 py-1.5 rounded-md mt-1">
           Kaydet
         </button>
       </form>

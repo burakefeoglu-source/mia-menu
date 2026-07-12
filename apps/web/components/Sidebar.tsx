@@ -35,7 +35,10 @@ const groups = [
   },
   {
     title: '4. Görüş & yorumlar',
-    items: [{ key: 'reviews', label: 'Görüş & yorumlar', href: '/reviews' }],
+    items: [
+      { key: 'reviews', label: 'Görüş & yorumlar', href: '/reviews' },
+      { key: 'stats', label: 'İstatistik', href: '/stats' },
+    ],
     soon: [],
   },
   {

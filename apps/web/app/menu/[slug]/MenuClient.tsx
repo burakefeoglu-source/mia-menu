@@ -37,6 +37,16 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const sectionNav = (tenant.section_nav as 'tabs' | 'grid') ?? 'tabs';
   const theme = getTheme(tenant.theme_color);
 
+  // Menü görüntülenme tracking
+  useEffect(() => {
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenant.id, event_type: 'menu_view' }),
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
   const [activeSection, setActiveSection] = useState<string | null>(
     sectionNav === 'grid' ? null : (sections[0]?.id ?? '')
@@ -44,7 +54,14 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
   const [showReview, setShowReview] = useState(false);
-  const [posterDismissed, setPosterDismissed] = useState(false);
+  function trackProductClick(product: ProductWithExtras) {
+    setSelected(product);
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenant.id, event_type: 'product_click', product_id: product.id }),
+    }).catch(() => {});
+  }
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState('');
   const [reviewComment, setReviewComment] = useState('');
@@ -153,7 +170,24 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             <h1 className={`text-lg font-semibold ${theme.headerText}`}>{tenant.name}</h1>
             {langToggleLight}
           </div>
-          <span className="inline-flex items-center gap-1 mt-2 text-xs bg-white text-emerald-700 px-2 py-1 rounded-md">{t.allergenInfo}</span>
+          <div className="flex items-center gap-3 mt-2">
+            <span className="inline-flex items-center gap-1 text-xs bg-white text-emerald-700 px-2 py-1 rounded-md">{t.allergenInfo}</span>
+            {tenant.instagram_url && (
+              <a href={tenant.instagram_url} target="_blank" rel="noreferrer" className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-sm">📸</span>
+              </a>
+            )}
+            {tenant.whatsapp_number && (
+              <a href={`https://wa.me/${tenant.whatsapp_number}`} target="_blank" rel="noreferrer" className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-sm">💬</span>
+              </a>
+            )}
+            {tenant.google_maps_url && (
+              <a href={tenant.google_maps_url} target="_blank" rel="noreferrer" className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-sm">📍</span>
+              </a>
+            )}
+          </div>
         </div>
       </header>
     );

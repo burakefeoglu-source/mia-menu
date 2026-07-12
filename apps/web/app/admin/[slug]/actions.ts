@@ -137,6 +137,8 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       address: formData.get('address') as string,
       cover_image_url: (formData.get('cover_image_url') as string) || null,
       google_review_url: (formData.get('google_review_url') as string) || null,
+      notification_phone: (formData.get('notification_phone') as string) || null,
+      callmebot_api_key: (formData.get('callmebot_api_key') as string) || null,
     })
     .eq('id', tenantId);
 
