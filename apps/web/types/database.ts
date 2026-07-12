@@ -55,6 +55,7 @@ export type Tag = {
   id: string;
   tenant_id: string;
   name: string;
+  icon: string | null;
 };
 
 export type Review = {

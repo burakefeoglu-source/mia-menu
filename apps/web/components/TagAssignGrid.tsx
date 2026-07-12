@@ -45,7 +45,7 @@ export default function TagAssignGrid({
               <th key={t.id} className="px-2 pb-2 text-xs text-gray-500 font-normal">
                 <div className="flex flex-col items-center gap-1">
                   <span title={t.name}>
-                    {(t as { icon?: string | null }).icon ? (t as { icon: string }).icon : t.name}
+                    {t.icon ? t.icon : t.name}
                   </span>
                   <button
                     onClick={() => {
