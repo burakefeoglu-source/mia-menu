@@ -301,14 +301,17 @@ export default function MenuClient({ tenant, sections, products, announcement, t
                           {p.is_vegan && <span className="ml-1 text-sm">🌱</span>}
                           {p.is_vegetarian && <span className="ml-1 text-sm">🥗</span>}
                           {p.is_gluten_free && <span className="ml-1 text-sm">🌾</span>}
-                          {p.product_tags?.map((pt, i) => (
-                            <span key={i} className="ml-1 text-sm" title={pt.tags.name}>
-                              {(pt.tags as { name: string; icon?: string | null }).icon
-                                ? (pt.tags as { icon: string }).icon
-                                : <span className="text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md">{pt.tags.name}</span>
-                              }
-                            </span>
-                          ))}
+                          {p.product_tags?.map((pt, i) => {
+                            const tagIcon = (pt.tags as unknown as { name: string; icon?: string | null }).icon;
+                            return (
+                              <span key={i} className="ml-1 text-sm" title={pt.tags.name}>
+                                {tagIcon
+                                  ? tagIcon
+                                  : <span className="text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md">{pt.tags.name}</span>
+                                }
+                              </span>
+                            );
+                          })}
                         </p>
                         {p.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{p.description}</p>}
                       </div>
@@ -405,8 +408,8 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           <div className="flex flex-wrap gap-1.5 mt-2">
             {selected.product_tags.map((pt, i) => (
               <span key={i} className="inline-flex items-center gap-1 text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded-md">
-                {(pt.tags as { name: string; icon?: string | null }).icon && (
-                  <span>{(pt.tags as { icon: string }).icon}</span>
+                {(pt.tags as unknown as { name: string; icon?: string | null }).icon && (
+                  <span>{(pt.tags as unknown as { icon: string }).icon}</span>
                 )}
                 {pt.tags.name}
               </span>
