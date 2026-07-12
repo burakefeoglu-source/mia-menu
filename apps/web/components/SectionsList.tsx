@@ -7,6 +7,7 @@ import {
   deleteProduct,
   deleteSection,
   reorderProducts,
+  reorderSections,
   updateProduct,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
@@ -36,44 +37,76 @@ export default function SectionsList({
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [localProducts, setLocalProducts] = useState(products);
+  const [localSections, setLocalSections] = useState(sections);
+  const sectionDragIndex = useRef<number | null>(null);
+
+  function handleSectionDragStart(index: number) {
+    sectionDragIndex.current = index;
+  }
+
+  function handleSectionDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (sectionDragIndex.current === null || sectionDragIndex.current === index) return;
+    const newSections = [...localSections];
+    const [moved] = newSections.splice(sectionDragIndex.current, 1);
+    newSections.splice(index, 0, moved);
+    sectionDragIndex.current = index;
+    setLocalSections(newSections);
+  }
+
+  async function handleSectionDrop() {
+    await reorderSections(slug, localSections.map((s) => s.id));
+    broadcastPreviewRefresh();
+    sectionDragIndex.current = null;
+  }
 
   return (
     <div className="flex flex-col gap-2">
-      {sections.map((s) => {
+      {localSections.map((s, sectionIndex) => {
         const sectionProducts = localProducts.filter((p) => p.section_id === s.id);
         const isOpen = !!expanded[s.id];
         const boundAddProduct = addProduct.bind(null, tenantId, s.id, slug);
 
         return (
-          <div key={s.id} className="border border-gray-200 rounded-md overflow-hidden">
+          <div
+            key={s.id}
+            draggable={editingSection !== s.id}
+            onDragStart={() => handleSectionDragStart(sectionIndex)}
+            onDragOver={(e) => handleSectionDragOver(e, sectionIndex)}
+            onDrop={handleSectionDrop}
+            className="border border-gray-200 rounded-md overflow-hidden"
+          >
             <div className="w-full flex justify-between items-center px-3 py-2.5">
-              {editingSection === s.id ? (
-                <form
-                  className="flex items-center gap-2 flex-1"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const input = e.currentTarget.elements.namedItem('name') as HTMLInputElement;
-                    await updateSectionName(s.id, slug, input.value);
-                    setEditingSection(null);
-                  }}
-                >
-                  <input name="name" defaultValue={s.name} autoFocus
-                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm" />
-                  <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">Kaydet</button>
-                  <button type="button" onClick={() => setEditingSection(null)} className="text-xs text-gray-400">Vazgeç</button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => setExpanded((e) => ({ ...e, [s.id]: !e[s.id] }))}
-                  className="flex-1 flex justify-between items-center text-left"
-                >
-                  <span className="text-sm">{s.name}</span>
-                  <span className="flex items-center gap-2 text-xs text-gray-500 mr-2">
-                    {sectionProducts.length} ürün
-                    <span>{isOpen ? '▲' : '▼'}</span>
-                  </span>
-                </button>
-              )}
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 cursor-grab" />
+                {editingSection === s.id ? (
+                  <form
+                    className="flex items-center gap-2 flex-1"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const input = e.currentTarget.elements.namedItem('name') as HTMLInputElement;
+                      await updateSectionName(s.id, slug, input.value);
+                      setEditingSection(null);
+                    }}
+                  >
+                    <input name="name" defaultValue={s.name} autoFocus
+                      className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm" />
+                    <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">Kaydet</button>
+                    <button type="button" onClick={() => setEditingSection(null)} className="text-xs text-gray-400">Vazgeç</button>
+                  </form>
+                ) : (
+                  <button
+                    onClick={() => setExpanded((e) => ({ ...e, [s.id]: !e[s.id] }))}
+                    className="flex-1 flex justify-between items-center text-left"
+                  >
+                    <span className="text-sm">{s.name}</span>
+                    <span className="flex items-center gap-2 text-xs text-gray-500 mr-2">
+                      {sectionProducts.length} ürün
+                      <span>{isOpen ? '▲' : '▼'}</span>
+                    </span>
+                  </button>
+                )}
+              </div>
               {editingSection !== s.id && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button onClick={() => setEditingSection(s.id)} className="text-xs text-gray-400">Düzenle</button>

@@ -104,6 +104,17 @@ export async function reorderProducts(slug: string, orderedIds: string[]) {
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function reorderSections(slug: string, orderedIds: string[]) {
+  const supabase = createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from('menu_sections').update({ sort_order: index }).eq('id', id)
+    )
+  );
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updatePrice(productId: string, slug: string, price: number) {
   const supabase = createClient();
 
