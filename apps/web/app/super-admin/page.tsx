@@ -4,7 +4,7 @@ import SuperAdminClient from './SuperAdminClient';
 
 export const dynamic = 'force-dynamic';
 
-const SUPER_ADMIN_EMAIL = 'burak@mia.menu'; // bunu kendi e-postanla değiştir
+const SUPER_ADMIN_EMAIL = 'burak.efeoglu@gmail.com';
 
 export default async function SuperAdminPage() {
   const supabase = createClient();
