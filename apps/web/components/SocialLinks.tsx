@@ -48,10 +48,10 @@ export default function SocialLinks({ instagram, whatsapp, maps, variant, workin
   if (!hasAny && !workingHours) return null;
 
   return (
-    <div className="flex items-center gap-2 mt-2">
+    <div className="flex flex-wrap items-center gap-2 mt-2">
       {workingHours && (
-        <span className={`text-xs ${variant === 'on-dark' ? 'text-white/70' : 'text-gray-500'}`}>
-          🕐 {workingHours}
+        <span className={`text-xs font-medium ${variant === 'on-dark' ? 'text-white/80' : 'text-gray-500'}`}>
+          {workingHours}
         </span>
       )}
       {icons.map((item, i) => (
@@ -60,8 +60,8 @@ export default function SocialLinks({ instagram, whatsapp, maps, variant, workin
           href={item.href}
           target="_blank"
           rel="noreferrer"
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white transition-opacity hover:opacity-80"
-          style={variant === 'on-light' ? { background: item.bg } : { background: 'rgba(255,255,255,0.2)' }}
+          className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white transition-opacity hover:opacity-80"
+          style={variant === 'on-light' ? { background: item.bg } : { background: 'rgba(0,0,0,0.2)' }}
         >
           {item.icon}
         </a>

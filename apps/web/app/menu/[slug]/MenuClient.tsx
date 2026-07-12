@@ -175,14 +175,14 @@ export default function MenuClient({ tenant, sections, products, announcement, t
 
     /* classic (default) */
     return (
-      <header className={`${theme.headerBg} relative`}>
+      <header className={`${theme.headerBg}`}>
         {tenant.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-48 object-cover" />
+          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-44 object-cover" />
         )}
-        <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h1 className={`text-lg font-semibold ${theme.headerText}`}>{tenant.name}</h1>
+        <div className="px-4 py-3">
+          <div className="flex justify-between items-center">
+            <h1 className={`text-base font-semibold ${theme.headerText}`}>{tenant.name}</h1>
             {langToggleLight}
           </div>
           <SocialLinks
@@ -190,7 +190,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             whatsapp={tenant.whatsapp_number}
             maps={tenant.google_maps_url}
             workingHours={tenant.working_hours}
-            variant="on-dark"
+            variant="on-light"
           />
         </div>
       </header>
