@@ -8,7 +8,7 @@ export default function ImageUploader({
   onUploaded,
   label = 'Fotoğraf yükle',
 }: {
-  folder: 'products' | 'logos' | 'covers';
+  folder: 'products' | 'logos' | 'covers' | 'announcements';
   currentUrl?: string | null;
   onUploaded: (url: string) => void;
   label?: string;
