@@ -38,7 +38,7 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-gray-50">
       <TrialBanner tenantId={tenant.id} />
       <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className="flex justify-between items-center pb-3 border-b border-gray-200 mb-5">
+        <div className="flex justify-between items-center pb-3 border-b border-gray-200 mb-3">
           <div>
             <p className="text-xs text-gray-500">Backoffice</p>
             <p className="text-lg font-medium">{tenant.name}</p>
@@ -55,6 +55,28 @@ export default async function AdminLayout({
             <LogoutButton />
           </div>
         </div>
+
+        {/* Kayan reklam bandı */}
+        <div className="overflow-hidden bg-rose-600 rounded-lg mb-5 py-1.5">
+          <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
+            {[1, 2, 3].map((i) => (
+              <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0">
+                🎉 Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
+                &nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+                Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
+                &nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+                Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
+              </span>
+            ))}
+          </div>
+          <style>{`
+            @keyframes ticker {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-33.333%); }
+            }
+          `}</style>
+        </div>
+
         <div className="flex gap-5 items-start">
           <Sidebar slug={params.slug} />
           <div className="flex-1 min-w-0">{children}</div>
