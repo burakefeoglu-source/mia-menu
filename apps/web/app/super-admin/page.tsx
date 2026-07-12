@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import SuperAdminClient from './SuperAdminClient';
+import BannerManager from './BannerManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,11 @@ export default async function SuperAdminPage() {
     `)
     .order('created_at', { ascending: false });
 
+  const { data: banners } = await supabase
+    .from('admin_banners')
+    .select('*')
+    .order('created_at', { ascending: false });
+
   return (
     <main className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -35,6 +41,7 @@ export default async function SuperAdminPage() {
           </div>
         </div>
         <SuperAdminClient tenants={tenants ?? []} />
+        <BannerManager initialBanners={banners ?? []} />
       </div>
     </main>
   );

@@ -34,6 +34,12 @@ export default async function AdminLayout({
 
   if (!staff) redirect('/giris');
 
+  const { data: banner } = await supabase
+    .from('admin_banners')
+    .select('text, bg_color')
+    .eq('is_active', true)
+    .maybeSingle();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <TrialBanner tenantId={tenant.id} />
@@ -57,25 +63,25 @@ export default async function AdminLayout({
         </div>
 
         {/* Kayan reklam bandı */}
-        <div className="overflow-hidden bg-rose-600 rounded-lg mb-5 py-1.5">
-          <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
-            {[1, 2, 3].map((i) => (
-              <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0">
-                🎉 Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
-                &nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-                Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
-                &nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-                Mia Digital ile sosyal medyanı yönet — 1 yıl boyunca üyeliğin hediye!
-              </span>
-            ))}
+        {banner && (
+          <div className="overflow-hidden rounded-lg mb-5 py-1.5" style={{ background: banner.bg_color }}>
+            <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
+              {[1, 2, 3].map((i) => (
+                <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0">
+                  {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+                  {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
+                  {banner.text}
+                </span>
+              ))}
+            </div>
+            <style>{`
+              @keyframes ticker {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-33.333%); }
+              }
+            `}</style>
           </div>
-          <style>{`
-            @keyframes ticker {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-33.333%); }
-            }
-          `}</style>
-        </div>
+        )}
 
         <div className="flex gap-5 items-start">
           <Sidebar slug={params.slug} />
