@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import { addAnnouncement, deleteAnnouncement, toggleAnnouncement } from '../../actions';
+import { deleteAnnouncement, toggleAnnouncement } from '../../actions';
+import AnnouncementForm from './AnnouncementForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,11 +32,9 @@ export default async function AnnouncementsPage({ params }: { params: { slug: st
     .eq('tenant_id', tenant!.id)
     .order('created_at', { ascending: false });
 
-  const boundAdd = addAnnouncement.bind(null, tenant!.id, params.slug);
-
   return (
     <div>
-      <h2 className="text-base font-medium mb-4">Duyurular</h2>
+      <h2 className="text-base font-medium mb-4">Duyurular & Kampanyalar</h2>
 
       <div className="flex flex-col gap-2 mb-5">
         {(announcements ?? []).map((a) => {
@@ -44,23 +43,27 @@ export default async function AnnouncementsPage({ params }: { params: { slug: st
           const status = statusLabel(a);
           return (
             <div key={a.id} className="border border-gray-200 rounded-md p-3 flex justify-between items-start gap-3">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm">{a.icon_type === 'kampanya' ? '🏷️' : '📢'}</span>
-                  <span className="text-[11px] uppercase text-gray-400">
-                    {a.icon_type === 'kampanya' ? 'Kampanya' : 'Duyuru'} · {a.kind === 'poster' ? 'Poster' : 'Metin'}
-                  </span>
-                  <span className={`text-[11px] font-medium ${status.color}`}>{status.label}</span>
+              <div className="flex gap-2 items-start min-w-0">
+                <span className="text-lg flex-shrink-0">
+                  {a.icon_type === 'kampanya' ? '🏷️' : '📢'}
+                </span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-[11px] uppercase text-gray-400">
+                      {a.kind === 'poster' ? 'Poster' : 'Metin'}
+                    </span>
+                    <span className={`text-[11px] font-medium ${status.color}`}>{status.label}</span>
+                  </div>
+                  <p className="text-sm font-medium truncate">{a.title}</p>
+                  {a.message && <p className="text-xs text-gray-500 mt-0.5 truncate">{a.message}</p>}
+                  {(a.starts_at || a.ends_at) && (
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {a.starts_at && `Başlangıç: ${formatDate(a.starts_at)}`}
+                      {a.starts_at && a.ends_at && ' · '}
+                      {a.ends_at && `Bitiş: ${formatDate(a.ends_at)}`}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm font-medium">{a.title}</p>
-                {a.message && <p className="text-xs text-gray-500 mt-0.5">{a.message}</p>}
-                {(a.starts_at || a.ends_at) && (
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    {a.starts_at && `Başlangıç: ${formatDate(a.starts_at)}`}
-                    {a.starts_at && a.ends_at && ' · '}
-                    {a.ends_at && `Bitiş: ${formatDate(a.ends_at)}`}
-                  </p>
-                )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <form action={boundToggle}>
@@ -80,39 +83,7 @@ export default async function AnnouncementsPage({ params }: { params: { slug: st
         )}
       </div>
 
-      <form action={boundAdd} className="flex flex-col gap-2 max-w-sm border-t border-gray-100 pt-4">
-        <label className="text-xs text-gray-500">Tür</label>
-        <select name="kind" className="border border-gray-200 rounded-md px-3 py-1.5 text-sm">
-          <option value="text">Metin duyuru</option>
-          <option value="poster">Poster duyuru</option>
-        </select>
-        <select name="icon_type" className="border border-gray-200 rounded-md px-3 py-1.5 text-sm">
-          <option value="duyuru">📢 Duyuru</option>
-          <option value="kampanya">🏷️ Kampanya</option>
-        </select>
-        <input name="title" placeholder="Başlık" required
-          className="border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
-        <textarea name="message" placeholder="Mesaj" rows={2}
-          className="border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
-        <input name="image_url" placeholder="Görsel URL (poster için, opsiyonel)"
-          className="border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="text-[11px] text-gray-400">Başlangıç tarihi (opsiyonel)</label>
-            <input type="datetime-local" name="starts_at"
-              className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm mt-0.5" />
-          </div>
-          <div className="flex-1">
-            <label className="text-[11px] text-gray-400">Bitiş tarihi (opsiyonel)</label>
-            <input type="datetime-local" name="ends_at"
-              className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm mt-0.5" />
-          </div>
-        </div>
-        <button type="submit"
-          className="self-start text-sm bg-rose-600 text-white px-3 py-1.5 rounded-md mt-1">
-          Duyuru ekle
-        </button>
-      </form>
+      <AnnouncementForm tenantId={tenant!.id} slug={params.slug} />
     </div>
   );
 }

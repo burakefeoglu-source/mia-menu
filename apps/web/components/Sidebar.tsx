@@ -8,6 +8,7 @@ const groups = [
     title: '1. Menü içeriği',
     items: [
       { key: 'sections', label: 'Bölümler & ürünler', href: '' },
+      { key: 'daily', label: 'Günün menüsü', href: '/daily' },
       { key: 'prices', label: 'Fiyat güncelleme', href: '/prices' },
       { key: 'tags', label: 'Ürün etiketleri', href: '/tags' },
       { key: 'allergens', label: 'Alerjen listesi', href: '/allergens' },

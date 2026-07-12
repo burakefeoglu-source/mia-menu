@@ -44,6 +44,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [posterDismissed, setPosterDismissed] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState('');
   const [reviewComment, setReviewComment] = useState('');
@@ -297,16 +298,14 @@ export default function MenuClient({ tenant, sections, products, announcement, t
                       <div className="min-w-0">
                         <p className="text-sm">
                           {nameFor('product', p.id, p.name)}
+                          {p.is_vegan && <span className="ml-1 text-sm">🌱</span>}
+                          {p.is_vegetarian && <span className="ml-1 text-sm">🥗</span>}
+                          {p.is_gluten_free && <span className="ml-1 text-sm">🌾</span>}
                           {p.product_tags?.map((pt, i) => (
                             <span key={i} className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md">{pt.tags.name}</span>
                           ))}
                         </p>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          {(p as { is_vegan?: boolean }).is_vegan && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-md">🌱 Vegan</span>}
-                          {(p as { is_vegetarian?: boolean }).is_vegetarian && <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-md">🥗 Vejetaryen</span>}
-                          {(p as { is_gluten_free?: boolean }).is_gluten_free && <span className="text-[10px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-md">🌾 Glutensiz</span>}
-                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
-                        </div>
+                        {p.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{p.description}</p>}
                       </div>
                     </div>
                     <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
@@ -354,6 +353,30 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   );
 
   /* ─── MODALLER ─── */
+  const posterModal = announcement?.kind === 'poster' && !posterDismissed && (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50"
+      onClick={() => setPosterDismissed(true)}>
+      <div className="bg-white rounded-xl overflow-hidden max-w-sm w-full shadow-xl"
+        onClick={(e) => e.stopPropagation()}>
+        {announcement.image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={announcement.image_url} alt={announcement.title ?? ''} className="w-full" />
+        )}
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span>{(announcement as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}</span>
+            {announcement.title && <p className="font-medium text-gray-900">{announcement.title}</p>}
+          </div>
+          {announcement.message && <p className="text-sm text-gray-600 mt-1">{announcement.message}</p>}
+          <button onClick={() => setPosterDismissed(true)}
+            className="w-full mt-3 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">
+            Kapat
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   const modal = selected && (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center p-6 z-50" onClick={() => setSelected(null)}>
       <div className="bg-white rounded-lg p-5 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
@@ -364,6 +387,14 @@ export default function MenuClient({ tenant, sections, products, announcement, t
         {selected.image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={selected.image_url} alt={selected.name} className="w-full h-36 object-cover rounded-md mt-2" />
+        )}
+        {/* Diyet rozetleri */}
+        {(selected.is_vegan || selected.is_vegetarian || selected.is_gluten_free) && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {selected.is_vegan && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-md">🌱 Vegan</span>}
+            {selected.is_vegetarian && <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-md">🥗 Vejetaryen</span>}
+            {selected.is_gluten_free && <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md">🌾 Glutensiz</span>}
+          </div>
         )}
         {selected.product_tags && selected.product_tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -433,6 +464,7 @@ export default function MenuClient({ tenant, sections, products, announcement, t
 
   return (
     <main className="mx-auto max-w-md min-h-screen bg-white">
+      {posterModal}
       {header}
       {body}
       {modal}
