@@ -5,49 +5,43 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white">
 
-      {/* NAV */}
-      <nav className="flex justify-between items-center px-6 py-3 border-b border-gray-100 bg-white sticky top-0 z-10">
-        <Image src="/logo.png" alt="mia.menu" width={100} height={40} className="object-contain" />
-        <div className="flex gap-2">
-          <Link href="/giris" className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-700">Giriş</Link>
-          <Link href="/kayit" className="text-sm px-4 py-2 bg-red-500 text-white rounded-lg font-medium">Ücretsiz başla</Link>
-        </div>
-      </nav>
-
       {/* HERO */}
-      <section className="text-center px-6 py-20 border-b border-gray-100">
+      <section className="text-center px-6 pt-16 pb-20 border-b border-gray-100">
+        <div className="flex justify-center mb-8">
+          <Image src="/logo.png" alt="mia.menu" width={120} height={48} className="object-contain" />
+        </div>
         <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs px-3 py-1.5 rounded-full mb-6">
           <span>✓</span> T.C. gıda mevzuatına uygun
         </div>
-        <h1 className="text-4xl font-semibold text-gray-900 max-w-lg mx-auto leading-tight mb-4">
+        <h1 className="text-5xl font-semibold text-gray-900 max-w-lg mx-auto leading-tight mb-4">
           Restoranınız için QR menü,<br />5 dakikada hazır
         </h1>
-        <p className="text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed">
+        <p className="text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed text-lg">
           Kağıt menü masrafı yok. Alerjen zorunluluğu karşılandı.
           Müşteriniz telefonuyla tarar, anında görür.
         </p>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <Link href="/kayit" className="bg-red-500 text-white px-6 py-3 rounded-lg font-medium text-sm">5 gün ücretsiz dene</Link>
-          <a href="https://mia-menu.vercel.app/menu/miabistro" target="_blank" rel="noreferrer"
-            className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg text-sm">Örnek menüyü gör</a>
+        <div className="flex gap-3 justify-center flex-wrap mb-14">
+          <Link href="/kayit" className="bg-red-500 text-white px-7 py-3.5 rounded-xl font-medium text-sm shadow-sm">
+            5 gün ücretsiz dene
+          </Link>
+          <Link href="/giris" className="bg-gray-100 text-gray-700 px-7 py-3.5 rounded-xl text-sm">
+            Giriş yap
+          </Link>
         </div>
-        <div className="mx-auto mt-12 w-48 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="bg-rose-50 p-3">
-            <div className="bg-gray-200 h-16 rounded-md mb-2" />
-            <p className="text-xs font-medium">Mia Bistro</p>
-            <span className="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded mt-1 inline-block">✓ Alerjen & kalori bilgisi</span>
-          </div>
-          <div className="flex gap-1 px-2 py-1.5 bg-gray-50 border-b border-gray-100 overflow-hidden">
-            {['Kahvaltı', 'Ana', 'Tatlı'].map((t, i) => (
-              <span key={t} className={`text-[9px] px-2 py-1 rounded-full whitespace-nowrap ${i === 0 ? 'bg-red-500 text-white' : 'text-gray-400'}`}>{t}</span>
-            ))}
-          </div>
-          {[['Serpme Kahvaltı', '450'], ['Menemen', '180'], ['Mercimek Çorbası', '120']].map(([n, p]) => (
-            <div key={n} className="flex justify-between px-3 py-2 text-[10px] border-b border-gray-50">
-              <span className="text-gray-800">{n}</span>
-              <span className="text-red-500 font-medium">{p} ₺</span>
+
+        {/* Gerçek menü iframe */}
+        <div className="mx-auto" style={{ width: 320 }}>
+          <div className="relative bg-gray-900 rounded-[40px] p-3 shadow-2xl">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-1.5 bg-gray-700 rounded-full z-10" />
+            <div className="rounded-[32px] overflow-hidden" style={{ height: 580 }}>
+              <iframe
+                src="/menu/miabistro"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="Örnek menü önizlemesi"
+              />
             </div>
-          ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-3">↑ Gerçek menü — kaydırın, deneyin</p>
         </div>
       </section>
 
@@ -126,11 +120,11 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="px-6 py-8 text-center">
         <Image src="/logo.png" alt="mia.menu" width={80} height={32} className="object-contain mx-auto mb-3" />
-        <p className="text-xs text-gray-400">
-          Mia Digital Solutions © 2026 ·{' '}
-          <Link href="/kayit" className="text-red-500">Kayıt ol</Link> ·{' '}
-          <Link href="/giris" className="text-red-500">Giriş</Link>
-        </p>
+        <p className="text-xs text-gray-400">Mia Digital Solutions © 2026</p>
+        <div className="flex gap-4 justify-center mt-3">
+          <Link href="/giris" className="text-xs text-red-500">Giriş yap</Link>
+          <Link href="/kayit" className="text-xs text-red-500 font-medium">Ücretsiz başla</Link>
+        </div>
       </footer>
 
     </main>
