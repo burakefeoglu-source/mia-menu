@@ -20,3 +20,6 @@ create index idx_analytics_tenant_date on analytics_events(tenant_id, created_at
 alter table analytics_events enable row level security;
 create policy "public_insert_analytics" on analytics_events for insert with check (true);
 create policy "staff_read_analytics" on analytics_events for select using (is_tenant_staff(tenant_id));
+
+-- Çalışma saatleri
+alter table tenants add column if not exists working_hours text;

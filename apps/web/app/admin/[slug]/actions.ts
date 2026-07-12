@@ -140,6 +140,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       instagram_url: (formData.get('instagram_url') as string) || null,
       whatsapp_number: (formData.get('whatsapp_number') as string) || null,
       google_maps_url: (formData.get('google_maps_url') as string) || null,
+      working_hours: (formData.get('working_hours') as string) || null,
       notification_phone: (formData.get('notification_phone') as string) || null,
       callmebot_api_key: (formData.get('callmebot_api_key') as string) || null,
     })

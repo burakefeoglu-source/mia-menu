@@ -17,6 +17,7 @@ export type Tenant = {
   whatsapp_number: string | null;
   google_maps_url: string | null;
   links_bio: string | null;
+  working_hours: string | null;
 };
 
 export type MenuSection = {
