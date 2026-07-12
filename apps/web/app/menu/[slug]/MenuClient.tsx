@@ -9,6 +9,10 @@ import { submitReview } from './actions';
 type ProductWithExtras = Product & {
   product_allergens?: { allergens: { code: string | null; name_tr: string; name_en: string } }[];
   product_tags?: { tags: { name: string } }[];
+  is_vegan?: boolean;
+  is_vegetarian?: boolean;
+  is_gluten_free?: boolean;
+  is_daily_special?: boolean;
 };
 
 type Translation = {
