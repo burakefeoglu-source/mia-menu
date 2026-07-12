@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { GripVertical } from 'lucide-react';
 import {
   addProduct,
   deleteProduct,
   deleteSection,
+  reorderProducts,
   updateProduct,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
@@ -33,11 +35,12 @@ export default function SectionsList({
   );
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
+  const [localProducts, setLocalProducts] = useState(products);
 
   return (
     <div className="flex flex-col gap-2">
       {sections.map((s) => {
-        const sectionProducts = products.filter((p) => p.section_id === s.id);
+        const sectionProducts = localProducts.filter((p) => p.section_id === s.id);
         const isOpen = !!expanded[s.id];
         const boundAddProduct = addProduct.bind(null, tenantId, s.id, slug);
 
@@ -49,29 +52,15 @@ export default function SectionsList({
                   className="flex items-center gap-2 flex-1"
                   onSubmit={async (e) => {
                     e.preventDefault();
-                    const input = e.currentTarget.elements.namedItem(
-                      'name'
-                    ) as HTMLInputElement;
+                    const input = e.currentTarget.elements.namedItem('name') as HTMLInputElement;
                     await updateSectionName(s.id, slug, input.value);
                     setEditingSection(null);
                   }}
                 >
-                  <input
-                    name="name"
-                    defaultValue={s.name}
-                    autoFocus
-                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm"
-                  />
-                  <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">
-                    Kaydet
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingSection(null)}
-                    className="text-xs text-gray-400"
-                  >
-                    Vazgeç
-                  </button>
+                  <input name="name" defaultValue={s.name} autoFocus
+                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm" />
+                  <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">Kaydet</button>
+                  <button type="button" onClick={() => setEditingSection(null)} className="text-xs text-gray-400">Vazgeç</button>
                 </form>
               ) : (
                 <button
@@ -85,128 +74,44 @@ export default function SectionsList({
                   </span>
                 </button>
               )}
-
               {editingSection !== s.id && (
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => setEditingSection(s.id)}
-                    className="text-xs text-gray-400"
-                    aria-label="Bölümü düzenle"
-                  >
-                    Düzenle
-                  </button>
+                  <button onClick={() => setEditingSection(s.id)} className="text-xs text-gray-400">Düzenle</button>
                   <button
                     onClick={() => {
-                      if (
-                        confirm(
-                          `"${s.name}" bölümünü ve içindeki ${sectionProducts.length} ürünü silmek istediğine emin misin?`
-                        )
-                      ) {
+                      if (confirm(`"${s.name}" bölümünü silmek istediğine emin misin?`)) {
                         deleteSection(s.id, slug);
                       }
                     }}
                     className="text-xs text-red-500"
-                    aria-label="Bölümü sil"
-                  >
-                    Sil
-                  </button>
+                  >Sil</button>
                 </div>
               )}
             </div>
 
             {isOpen && (
               <div className="border-t border-gray-200">
-                {sectionProducts.map((p) =>
-                  editingProduct === p.id ? (
-                    <ProductEditForm
-                      key={p.id}
-                      slug={slug}
-                      product={p}
-                      onDone={() => setEditingProduct(null)}
-                    />
-                  ) : (
-                    <div
-                      key={p.id}
-                      className="px-3 py-2 text-sm flex justify-between items-center border-b border-gray-100 gap-2"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        {p.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="w-8 h-8 rounded-md object-cover flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-md bg-gray-100 flex-shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {p.name}
-                          {p.product_allergens?.map((pa, i) => (
-                            <span
-                              key={i}
-                              className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md"
-                            >
-                              <AllergenIcon code={pa.allergens.code} className="w-3 h-3" />
-                              {pa.allergens.name_tr}
-                            </span>
-                          ))}
-                        </span>
-                      </div>
-                      <span className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
-                        {p.calories ? `${p.calories} kcal` : ''}
-                        <span className="font-medium text-gray-900">{p.price} ₺</span>
-                        <button onClick={() => setEditingProduct(p.id)} className="text-gray-400">
-                          Düzenle
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`"${p.name}" ürününü silmek istediğine emin misin?`)) {
-                              deleteProduct(p.id, slug);
-                            }
-                          }}
-                          className="text-red-500"
-                        >
-                          Sil
-                        </button>
-                      </span>
-                    </div>
-                  )
-                )}
-                <form
-                  action={boundAddProduct}
-                  className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-100"
-                >
-                  <input
-                    name="name"
-                    placeholder="Ürün adı"
-                    required
-                    className="flex-1 min-w-[100px] border border-gray-200 rounded-md px-2 py-1 text-xs"
-                  />
-                  <input
-                    name="price"
-                    type="number"
-                    placeholder="Fiyat"
-                    required
-                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-                  />
-                  <input
-                    name="calories"
-                    type="number"
-                    placeholder="Kalori"
-                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-                  />
-                  <input
-                    name="image_url"
-                    placeholder="Görsel URL (opsiyonel)"
-                    className="flex-1 min-w-[120px] border border-gray-200 rounded-md px-2 py-1 text-xs"
-                  />
-                  <button
-                    type="submit"
-                    className="text-xs bg-rose-600 text-white px-2.5 py-1 rounded-md"
-                  >
-                    Ekle
-                  </button>
+                <DraggableProductList
+                  slug={slug}
+                  sectionId={s.id}
+                  products={sectionProducts}
+                  editingProduct={editingProduct}
+                  setEditingProduct={setEditingProduct}
+                  onReorder={(newOrder) => {
+                    setLocalProducts((prev) => {
+                      const others = prev.filter((p) => p.section_id !== s.id);
+                      return [...others, ...newOrder];
+                    });
+                  }}
+                />
+                <form action={boundAddProduct} className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-100">
+                  <input name="name" placeholder="Ürün adı" required
+                    className="flex-1 min-w-[100px] border border-gray-200 rounded-md px-2 py-1 text-xs" />
+                  <input name="price" type="number" placeholder="Fiyat" required
+                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
+                  <input name="calories" type="number" placeholder="Kalori"
+                    className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
+                  <button type="submit" className="text-xs bg-rose-600 text-white px-2.5 py-1 rounded-md">Ekle</button>
                 </form>
               </div>
             )}
@@ -214,6 +119,106 @@ export default function SectionsList({
         );
       })}
     </div>
+  );
+}
+
+function DraggableProductList({
+  slug,
+  sectionId,
+  products,
+  editingProduct,
+  setEditingProduct,
+  onReorder,
+}: {
+  slug: string;
+  sectionId: string;
+  products: ProductWithAllergens[];
+  editingProduct: string | null;
+  setEditingProduct: (id: string | null) => void;
+  onReorder: (newOrder: ProductWithAllergens[]) => void;
+}) {
+  const [items, setItems] = useState(products);
+  const dragIndex = useRef<number | null>(null);
+
+  // products prop değişince (sunucudan güncelleme gelince) senkronize et
+  useState(() => { setItems(products); });
+
+  function handleDragStart(index: number) {
+    dragIndex.current = index;
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === index) return;
+
+    const newItems = [...items];
+    const [moved] = newItems.splice(dragIndex.current, 1);
+    newItems.splice(index, 0, moved);
+    dragIndex.current = index;
+    setItems(newItems);
+    onReorder(newItems);
+  }
+
+  async function handleDrop() {
+    await reorderProducts(slug, items.map((p) => p.id));
+    broadcastPreviewRefresh();
+    dragIndex.current = null;
+  }
+
+  return (
+    <>
+      {items.map((p, index) =>
+        editingProduct === p.id ? (
+          <ProductEditForm
+            key={p.id}
+            slug={slug}
+            product={p}
+            onDone={() => setEditingProduct(null)}
+          />
+        ) : (
+          <div
+            key={p.id}
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDrop={handleDrop}
+            className="px-3 py-2 text-sm flex justify-between items-center border-b border-gray-100 gap-2 cursor-grab active:cursor-grabbing active:bg-gray-50"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+              {p.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.image_url} alt={p.name} className="w-8 h-8 rounded-md object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-8 h-8 rounded-md bg-gray-100 flex-shrink-0" />
+              )}
+              <span className="truncate">
+                {p.name}
+                {p.product_allergens?.map((pa, i) => (
+                  <span key={i} className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded-md">
+                    <AllergenIcon code={pa.allergens.code} className="w-3 h-3" />
+                    {pa.allergens.name_tr}
+                  </span>
+                ))}
+              </span>
+            </div>
+            <span className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
+              {p.calories ? `${p.calories} kcal` : ''}
+              <span className="font-medium text-gray-900">{p.price} ₺</span>
+              <button onClick={() => setEditingProduct(p.id)} className="text-gray-400">Düzenle</button>
+              <button
+                onClick={() => {
+                  if (confirm(`"${p.name}" ürününü silmek istediğine emin misin?`)) {
+                    deleteProduct(p.id, slug);
+                  }
+                }}
+                className="text-red-500"
+              >Sil</button>
+            </span>
+          </div>
+        )
+      )}
+    </>
   );
 }
 
@@ -237,10 +242,8 @@ function ProductEditForm({
         const name = (form.elements.namedItem('name') as HTMLInputElement).value;
         const price = Number((form.elements.namedItem('price') as HTMLInputElement).value);
         const caloriesRaw = (form.elements.namedItem('calories') as HTMLInputElement).value;
-
         await updateProduct(product.id, slug, {
-          name,
-          price,
+          name, price,
           calories: caloriesRaw ? Number(caloriesRaw) : null,
           imageUrl: imageUrl || null,
         });
@@ -249,24 +252,12 @@ function ProductEditForm({
       }}
     >
       <div className="flex gap-2">
-        <input
-          name="name"
-          defaultValue={product.name}
-          autoFocus
-          className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs"
-        />
-        <input
-          name="price"
-          type="number"
-          defaultValue={product.price}
-          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-        />
-        <input
-          name="calories"
-          type="number"
-          defaultValue={product.calories ?? ''}
-          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs"
-        />
+        <input name="name" defaultValue={product.name} autoFocus
+          className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs" />
+        <input name="price" type="number" defaultValue={product.price}
+          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
+        <input name="calories" type="number" defaultValue={product.calories ?? ''}
+          className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
       </div>
 
       <div className="flex items-end gap-3">
@@ -277,11 +268,7 @@ function ProductEditForm({
           label="Fotoğraf yükle"
         />
         {imageUrl && (
-          <button
-            type="button"
-            onClick={() => setImageUrl('')}
-            className="text-xs text-red-500 pb-1"
-          >
+          <button type="button" onClick={() => setImageUrl('')} className="text-xs text-red-500 pb-1">
             Fotoğrafı sil
           </button>
         )}
@@ -290,14 +277,9 @@ function ProductEditForm({
       <p className="text-[11px] text-gray-400">
         Alerjenleri &quot;Alerjen listesi&quot; panelinden bu ürüne işaretleyebilirsin.
       </p>
-
       <div className="flex gap-2 mt-1">
-        <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">
-          Kaydet
-        </button>
-        <button type="button" onClick={onDone} className="text-xs text-gray-400">
-          Vazgeç
-        </button>
+        <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">Kaydet</button>
+        <button type="button" onClick={onDone} className="text-xs text-gray-400">Vazgeç</button>
       </div>
     </form>
   );

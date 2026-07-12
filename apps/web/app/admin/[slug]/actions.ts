@@ -93,6 +93,17 @@ export async function deleteProduct(productId: string, slug: string) {
   revalidatePath(`/menu/${slug}`);
 }
 
+export async function reorderProducts(slug: string, orderedIds: string[]) {
+  const supabase = createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from('products').update({ sort_order: index }).eq('id', id)
+    )
+  );
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
 export async function updatePrice(productId: string, slug: string, price: number) {
   const supabase = createClient();
 
