@@ -19,6 +19,10 @@ import type { MenuSection, Product } from '@/types/database';
 
 type ProductWithAllergens = Product & {
   product_allergens?: { allergens: { id: string; code: string | null; name_tr: string } }[];
+  is_vegan?: boolean;
+  is_vegetarian?: boolean;
+  is_gluten_free?: boolean;
+  is_daily_special?: boolean;
 };
 
 export default function SectionsList({
