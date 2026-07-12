@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { bulkUpdatePrices } from '@/app/admin/[slug]/actions';
-import type { MenuSection } from '@/types/database';
 
 export default function BulkPriceUpdater({
   tenantId,
@@ -11,7 +10,7 @@ export default function BulkPriceUpdater({
 }: {
   tenantId: string;
   slug: string;
-  sections: MenuSection[];
+  sections: { id: string; name: string }[];
 }) {
   const [type, setType] = useState<'percent' | 'flat'>('percent');
   const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
