@@ -46,8 +46,9 @@ export default async function AnnouncementsPage({ params }: { params: { slug: st
             <div key={a.id} className="border border-gray-200 rounded-md p-3 flex justify-between items-start gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-sm">{a.icon_type === 'kampanya' ? '🏷️' : '📢'}</span>
                   <span className="text-[11px] uppercase text-gray-400">
-                    {a.kind === 'poster' ? 'Poster' : 'Metin'}
+                    {a.icon_type === 'kampanya' ? 'Kampanya' : 'Duyuru'} · {a.kind === 'poster' ? 'Poster' : 'Metin'}
                   </span>
                   <span className={`text-[11px] font-medium ${status.color}`}>{status.label}</span>
                 </div>
@@ -84,6 +85,10 @@ export default async function AnnouncementsPage({ params }: { params: { slug: st
         <select name="kind" className="border border-gray-200 rounded-md px-3 py-1.5 text-sm">
           <option value="text">Metin duyuru</option>
           <option value="poster">Poster duyuru</option>
+        </select>
+        <select name="icon_type" className="border border-gray-200 rounded-md px-3 py-1.5 text-sm">
+          <option value="duyuru">📢 Duyuru</option>
+          <option value="kampanya">🏷️ Kampanya</option>
         </select>
         <input name="title" placeholder="Başlık" required
           className="border border-gray-200 rounded-md px-3 py-1.5 text-sm" />

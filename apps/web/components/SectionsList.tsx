@@ -9,6 +9,7 @@ import {
   reorderProducts,
   reorderSections,
   updateProduct,
+  updateProductFlags,
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
 import { AllergenIcon } from '@/lib/allergenIcons';
@@ -237,6 +238,28 @@ function DraggableProductList({
             </div>
             <span className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
               {p.calories ? `${p.calories} kcal` : ''}
+              <div className="flex items-center gap-1">
+                <button type="button" title="Vegan"
+                  onClick={() => updateProductFlags(p.id, slug, { is_vegan: !p.is_vegan })}
+                  className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${p.is_vegan ? 'bg-green-100 border-green-400 text-green-700' : 'border-gray-200 text-gray-300'}`}>
+                  🌱
+                </button>
+                <button type="button" title="Vejetaryen"
+                  onClick={() => updateProductFlags(p.id, slug, { is_vegetarian: !p.is_vegetarian })}
+                  className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${p.is_vegetarian ? 'bg-green-50 border-green-300 text-green-600' : 'border-gray-200 text-gray-300'}`}>
+                  🥗
+                </button>
+                <button type="button" title="Glutensiz"
+                  onClick={() => updateProductFlags(p.id, slug, { is_gluten_free: !p.is_gluten_free })}
+                  className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${p.is_gluten_free ? 'bg-amber-50 border-amber-300 text-amber-700' : 'border-gray-200 text-gray-300'}`}>
+                  🌾
+                </button>
+                <button type="button" title="Günün menüsü"
+                  onClick={() => updateProductFlags(p.id, slug, { is_daily_special: !p.is_daily_special })}
+                  className={`px-1.5 py-0.5 rounded text-[10px] border transition-colors ${p.is_daily_special ? 'bg-rose-50 border-rose-300 text-rose-600' : 'border-gray-200 text-gray-300'}`}>
+                  ⭐
+                </button>
+              </div>
               <span className="font-medium text-gray-900">{p.price} ₺</span>
               <button onClick={() => setEditingProduct(p.id)} className="text-gray-400">Düzenle</button>
               <button

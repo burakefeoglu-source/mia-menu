@@ -164,8 +164,31 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             // eslint-disable-next-line @next/next/no-img-element
             <img src={announcement.image_url} alt={announcement.title ?? ''} className="w-full rounded-md mb-2" />
           )}
-          {announcement.title && <p className="text-sm font-medium text-amber-900">{announcement.title}</p>}
-          {announcement.message && <p className="text-xs text-amber-700 mt-0.5">{announcement.message}</p>}
+          <div className="flex items-start gap-2">
+            <span className="text-base flex-shrink-0 mt-0.5">
+              {(announcement as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}
+            </span>
+            <div>
+              {announcement.title && <p className="text-sm font-medium text-amber-900">{announcement.title}</p>}
+              {announcement.message && <p className="text-xs text-amber-700 mt-0.5">{announcement.message}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Günün menüsü */}
+      {products.filter((p) => p.is_daily_special).length > 0 && (
+        <div className="px-4 pt-4">
+          <p className="text-xs font-medium text-rose-600 mb-2">⭐ Günün Menüsü</p>
+          <div className="flex flex-col gap-1.5">
+            {products.filter((p) => p.is_daily_special).map((p) => (
+              <button key={p.id} onClick={() => setSelected(p)}
+                className="flex justify-between items-center border border-rose-100 bg-rose-50 rounded-lg px-3 py-2 text-left">
+                <span className="text-sm font-medium text-gray-900">{nameFor('product', p.id, p.name)}</span>
+                <span className="text-sm font-semibold text-rose-600">{p.price} ₺</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -274,7 +297,12 @@ export default function MenuClient({ tenant, sections, products, announcement, t
                             <span key={i} className="ml-1.5 text-[10px] bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded-md">{pt.tags.name}</span>
                           ))}
                         </p>
-                        {p.description && <p className="text-xs text-gray-500 mt-0.5">{p.description}</p>}
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {(p as { is_vegan?: boolean }).is_vegan && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-md">🌱 Vegan</span>}
+                          {(p as { is_vegetarian?: boolean }).is_vegetarian && <span className="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-md">🥗 Vejetaryen</span>}
+                          {(p as { is_gluten_free?: boolean }).is_gluten_free && <span className="text-[10px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-md">🌾 Glutensiz</span>}
+                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
+                        </div>
                       </div>
                     </div>
                     <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>

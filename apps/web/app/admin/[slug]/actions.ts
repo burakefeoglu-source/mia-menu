@@ -153,6 +153,7 @@ export async function addAnnouncement(tenantId: string, slug: string, formData: 
   await supabase.from('announcements').insert({
     tenant_id: tenantId,
     kind: formData.get('kind') as string,
+    icon_type: (formData.get('icon_type') as string) || 'duyuru',
     title: formData.get('title') as string,
     message: (formData.get('message') as string) || null,
     image_url: (formData.get('image_url') as string) || null,
@@ -591,4 +592,58 @@ export async function toggleTenantLink(linkId: string, slug: string, active: boo
   await supabase.from('tenant_links').update({ is_active: active }).eq('id', linkId);
   revalidatePath(`/admin/${slug}/links`);
   revalidatePath(`/l/${slug}`);
+}
+
+// --- Toplu fiyat güncelleme ---
+
+export async function bulkUpdatePrices(
+  tenantId: string,
+  slug: string,
+  type: 'percent' | 'flat',
+  direction: 'increase' | 'decrease',
+  amount: number,
+  sectionId?: string
+) {
+  const supabase = createClient();
+  let query = supabase.from('products').select('id, price').eq('tenant_id', tenantId);
+  if (sectionId) query = query.eq('section_id', sectionId);
+  const { data: products } = await query;
+  if (!products?.length) return { updated: 0 };
+
+  const updates = products.map((p) => {
+    let newPrice: number;
+    if (type === 'percent') {
+      const delta = (p.price * amount) / 100;
+      newPrice = direction === 'increase' ? p.price + delta : p.price - delta;
+    } else {
+      newPrice = direction === 'increase' ? p.price + amount : p.price - amount;
+    }
+    return { id: p.id, price: Math.max(0, Math.round(newPrice)) };
+  });
+
+  await Promise.all(
+    updates.map((u) => supabase.from('products').update({ price: u.price }).eq('id', u.id))
+  );
+
+  revalidatePath(`/admin/${slug}/prices`);
+  revalidatePath(`/menu/${slug}`);
+  return { updated: updates.length };
+}
+
+// --- Ürün bayrakları (diyet rozetleri + günün menüsü) ---
+
+export async function updateProductFlags(
+  productId: string,
+  slug: string,
+  flags: {
+    is_vegan?: boolean;
+    is_vegetarian?: boolean;
+    is_gluten_free?: boolean;
+    is_daily_special?: boolean;
+  }
+) {
+  const supabase = createClient();
+  await supabase.from('products').update(flags).eq('id', productId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
 }

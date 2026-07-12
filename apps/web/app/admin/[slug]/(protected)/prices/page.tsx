@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import PriceEditor from '@/components/PriceEditor';
+import BulkPriceUpdater from '@/components/BulkPriceUpdater';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,8 @@ export default async function PricesPage({ params }: { params: { slug: string } 
   const { data: sections } = await supabase
     .from('menu_sections')
     .select('id, name')
-    .eq('tenant_id', tenant!.id);
+    .eq('tenant_id', tenant!.id)
+    .order('sort_order');
 
   const { data: products } = await supabase
     .from('products')
@@ -32,6 +34,7 @@ export default async function PricesPage({ params }: { params: { slug: string } 
   return (
     <div>
       <h2 className="text-base font-medium mb-4">Fiyat güncelleme</h2>
+      <BulkPriceUpdater tenantId={tenant!.id} slug={params.slug} sections={sections ?? []} />
       <PriceEditor slug={params.slug} products={productsWithSection} />
     </div>
   );
