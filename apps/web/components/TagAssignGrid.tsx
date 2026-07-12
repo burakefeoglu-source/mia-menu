@@ -44,7 +44,9 @@ export default function TagAssignGrid({
             {tags.map((t) => (
               <th key={t.id} className="px-2 pb-2 text-xs text-gray-500 font-normal">
                 <div className="flex flex-col items-center gap-1">
-                  <span>{t.name}</span>
+                  <span title={t.name}>
+                    {(t as { icon?: string | null }).icon ? (t as { icon: string }).icon : t.name}
+                  </span>
                   <button
                     onClick={() => {
                       if (confirm(`"${t.name}" etiketini silmek istediğine emin misin?`)) {

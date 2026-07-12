@@ -13,3 +13,6 @@ alter table products
   add column is_vegetarian boolean not null default false,
   add column is_gluten_free boolean not null default false,
   add column is_daily_special boolean not null default false;
+
+-- Tag ikonları
+alter table tags add column icon text;

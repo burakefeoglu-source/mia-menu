@@ -325,8 +325,9 @@ export async function deleteTable(tableId: string, slug: string) {
 export async function addTag(tenantId: string, slug: string, formData: FormData) {
   const supabase = createClient();
   const name = (formData.get('name') as string)?.trim();
+  const icon = (formData.get('icon') as string)?.trim() || null;
   if (!name) return;
-  await supabase.from('tags').insert({ tenant_id: tenantId, name });
+  await supabase.from('tags').insert({ tenant_id: tenantId, name, icon });
   revalidatePath(`/admin/${slug}/tags`);
   revalidatePath(`/menu/${slug}`);
 }
