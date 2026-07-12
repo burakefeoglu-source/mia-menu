@@ -17,3 +17,6 @@ values (
   '#c2185b',
   true
 );
+
+-- RLS'yi kapat — sadece super admin panelinden erişilir, uygulama seviyesinde korunur
+alter table admin_banners disable row level security;

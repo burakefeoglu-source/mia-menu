@@ -275,10 +275,12 @@ function ProductEditForm({
         const name = (form.elements.namedItem('name') as HTMLInputElement).value;
         const price = Number((form.elements.namedItem('price') as HTMLInputElement).value);
         const caloriesRaw = (form.elements.namedItem('calories') as HTMLInputElement).value;
+        const description = (form.elements.namedItem('description') as HTMLTextAreaElement).value;
         await updateProduct(product.id, slug, {
           name, price,
           calories: caloriesRaw ? Number(caloriesRaw) : null,
           imageUrl: imageUrl || null,
+          description: description || null,
         });
         broadcastPreviewRefresh();
         onDone();
@@ -290,8 +292,17 @@ function ProductEditForm({
         <input name="price" type="number" defaultValue={product.price}
           className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
         <input name="calories" type="number" defaultValue={product.calories ?? ''}
+          placeholder="Kcal"
           className="w-16 border border-gray-200 rounded-md px-2 py-1 text-xs" />
       </div>
+
+      <textarea
+        name="description"
+        defaultValue={product.description ?? ''}
+        placeholder="Açıklama (opsiyonel)"
+        rows={2}
+        className="border border-gray-200 rounded-md px-2 py-1 text-xs resize-none"
+      />
 
       <div className="flex items-end gap-3">
         <ImageUploader

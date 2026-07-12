@@ -52,7 +52,7 @@ export async function deleteSection(sectionId: string, slug: string) {
 export async function updateProduct(
   productId: string,
   slug: string,
-  data: { name: string; price: number; calories: number | null; imageUrl: string | null }
+  data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null }
 ) {
   const supabase = createClient();
   await supabase
@@ -62,6 +62,7 @@ export async function updateProduct(
       price: data.price,
       calories: data.calories,
       image_url: data.imageUrl,
+      description: data.description ?? null,
     })
     .eq('id', productId);
   revalidatePath(`/admin/${slug}`);
