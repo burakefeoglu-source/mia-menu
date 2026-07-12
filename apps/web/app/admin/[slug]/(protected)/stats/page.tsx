@@ -38,10 +38,14 @@ export default async function StatsPage({ params }: { params: { slug: string } }
 
   // Ürün tıklama sayılarını grupla
   const clickMap = new Map<string, { name: string; count: number }>();
-  (topProducts ?? []).forEach((e: { product_id: string | null; products: { name: string } | null }) => {
-    if (!e.product_id || !e.products) return;
-    const prev = clickMap.get(e.product_id) ?? { name: e.products.name, count: 0 };
-    clickMap.set(e.product_id, { ...prev, count: prev.count + 1 });
+  (topProducts ?? []).forEach((e) => {
+    const productId = e.product_id as string | null;
+    const products = e.products as { name: string }[] | { name: string } | null;
+    if (!productId || !products) return;
+    const productName = Array.isArray(products) ? products[0]?.name : products.name;
+    if (!productName) return;
+    const prev = clickMap.get(productId) ?? { name: productName, count: 0 };
+    clickMap.set(productId, { ...prev, count: prev.count + 1 });
   });
   const sortedProducts = [...clickMap.values()].sort((a, b) => b.count - a.count).slice(0, 10);
 
