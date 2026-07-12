@@ -308,6 +308,15 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             Google&apos;da değerlendirin
           </a>
         )}
+        <div className="text-center mt-6 pb-2">
+          <p className="text-[11px] text-gray-300">
+            Powered by{' '}
+            <a href="https://mia-menu.vercel.app" target="_blank" rel="noreferrer"
+              className="text-gray-400 hover:text-gray-500">
+              Mia Digital Solutions
+            </a>
+          </p>
+        </div>
       </div>
     </>
   );
