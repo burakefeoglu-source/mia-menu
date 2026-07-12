@@ -13,6 +13,10 @@ export type Tenant = {
   menu_layout: 'classic' | 'dark' | 'minimal';
   section_nav: 'tabs' | 'grid';
   google_review_url: string | null;
+  instagram_url: string | null;
+  whatsapp_number: string | null;
+  google_maps_url: string | null;
+  links_bio: string | null;
 };
 
 export type MenuSection = {
@@ -111,4 +115,16 @@ export type OrderItem = {
   product_name: string;
   unit_price: number;
   quantity: number;
+};
+
+export type TenantLink = {
+  id: string;
+  tenant_id: string;
+  title: string;
+  subtitle: string | null;
+  url: string;
+  icon: string;
+  color: string;
+  sort_order: number;
+  is_active: boolean;
 };

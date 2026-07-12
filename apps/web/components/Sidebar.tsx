@@ -21,6 +21,7 @@ const groups = [
     items: [
       { key: 'design', label: 'Menü tasarım', href: '/design' },
       { key: 'print', label: 'Baskı', href: '/print' },
+      { key: 'links', label: 'Link sayfası', href: '/links' },
       { key: 'qr', label: 'Karekod', href: '/qr' },
       { key: 'language', label: 'Dil ayarları', href: '/language' },
     ],

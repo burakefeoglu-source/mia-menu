@@ -541,3 +541,53 @@ export async function updateSectionDisplayStyle(
   revalidatePath(`/menu/${slug}`);
 }
 
+
+// --- Link sayfası ---
+
+export async function updateLinksProfile(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  await supabase.from('tenants').update({
+    links_bio: (formData.get('links_bio') as string) || null,
+    instagram_url: (formData.get('instagram_url') as string) || null,
+    whatsapp_number: (formData.get('whatsapp_number') as string) || null,
+    google_maps_url: (formData.get('google_maps_url') as string) || null,
+  }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/links`);
+  revalidatePath(`/l/${slug}`);
+}
+
+export async function addTenantLink(tenantId: string, slug: string, formData: FormData) {
+  const supabase = createClient();
+  const { data: last } = await supabase
+    .from('tenant_links')
+    .select('sort_order')
+    .eq('tenant_id', tenantId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  await supabase.from('tenant_links').insert({
+    tenant_id: tenantId,
+    title: formData.get('title') as string,
+    subtitle: (formData.get('subtitle') as string) || null,
+    url: formData.get('url') as string,
+    icon: (formData.get('icon') as string) || 'link',
+    color: (formData.get('color') as string) || '#6b7280',
+    sort_order: (last?.sort_order ?? 0) + 1,
+  });
+  revalidatePath(`/admin/${slug}/links`);
+  revalidatePath(`/l/${slug}`);
+}
+
+export async function deleteTenantLink(linkId: string, slug: string) {
+  const supabase = createClient();
+  await supabase.from('tenant_links').delete().eq('id', linkId);
+  revalidatePath(`/admin/${slug}/links`);
+  revalidatePath(`/l/${slug}`);
+}
+
+export async function toggleTenantLink(linkId: string, slug: string, active: boolean) {
+  const supabase = createClient();
+  await supabase.from('tenant_links').update({ is_active: active }).eq('id', linkId);
+  revalidatePath(`/admin/${slug}/links`);
+  revalidatePath(`/l/${slug}`);
+}
