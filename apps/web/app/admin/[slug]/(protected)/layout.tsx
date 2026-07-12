@@ -48,7 +48,7 @@ export default async function AdminLayout({
               href={`/menu/${params.slug}`}
               target="_blank"
               rel="noreferrer"
-              className="text-sm bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md"
+              className="text-sm bg-amber-100 text-amber-800 px-3 py-1.5 rounded-md whitespace-nowrap"
             >
               Ziyaretçi sayfanız ↗
             </a>
