@@ -269,12 +269,23 @@ function ProductEditForm({
         />
       </div>
 
-      <ImageUploader
-        folder="products"
-        currentUrl={imageUrl}
-        onUploaded={(url) => setImageUrl(url)}
-        label="Fotoğraf yükle"
-      />
+      <div className="flex items-end gap-3">
+        <ImageUploader
+          folder="products"
+          currentUrl={imageUrl}
+          onUploaded={(url) => setImageUrl(url)}
+          label="Fotoğraf yükle"
+        />
+        {imageUrl && (
+          <button
+            type="button"
+            onClick={() => setImageUrl('')}
+            className="text-xs text-red-500 pb-1"
+          >
+            Fotoğrafı sil
+          </button>
+        )}
+      </div>
 
       <p className="text-[11px] text-gray-400">
         Alerjenleri &quot;Alerjen listesi&quot; panelinden bu ürüne işaretleyebilirsin.

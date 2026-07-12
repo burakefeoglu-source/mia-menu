@@ -12,6 +12,7 @@ export type Tenant = {
   theme_color: string;
   menu_layout: 'classic' | 'dark' | 'minimal';
   section_nav: 'tabs' | 'grid';
+  google_review_url: string | null;
 };
 
 export type MenuSection = {

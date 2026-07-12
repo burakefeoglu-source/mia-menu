@@ -292,6 +292,16 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           className="w-full text-sm text-gray-500 border border-gray-200 rounded-md py-2 mt-4">
           ★ {t.leaveReview}
         </button>
+        {tenant.google_review_url && (
+          <a
+            href={tenant.google_review_url}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full block text-center text-sm text-blue-600 border border-blue-100 bg-blue-50 rounded-md py-2 mt-2"
+          >
+            ★★★★★ Google&apos;da değerlendirin
+          </a>
+        )}
       </div>
     </>
   );

@@ -113,6 +113,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       phone: formData.get('phone') as string,
       address: formData.get('address') as string,
       cover_image_url: (formData.get('cover_image_url') as string) || null,
+      google_review_url: (formData.get('google_review_url') as string) || null,
     })
     .eq('id', tenantId);
 
@@ -123,12 +124,17 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
 export async function addAnnouncement(tenantId: string, slug: string, formData: FormData) {
   const supabase = createClient();
 
+  const startsAt = (formData.get('starts_at') as string) || null;
+  const endsAt = (formData.get('ends_at') as string) || null;
+
   await supabase.from('announcements').insert({
     tenant_id: tenantId,
     kind: formData.get('kind') as string,
     title: formData.get('title') as string,
     message: (formData.get('message') as string) || null,
     image_url: (formData.get('image_url') as string) || null,
+    starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+    ends_at: endsAt ? new Date(endsAt).toISOString() : null,
   });
 
   revalidatePath(`/admin/${slug}/announcements`);
