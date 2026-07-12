@@ -297,9 +297,15 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             href={tenant.google_review_url}
             target="_blank"
             rel="noreferrer"
-            className="w-full block text-center text-sm text-blue-600 border border-blue-100 bg-blue-50 rounded-md py-2 mt-2"
+            className="w-full flex items-center justify-center gap-2 text-sm text-gray-700 border border-gray-200 rounded-md py-2 mt-2"
           >
-            ★★★★★ Google&apos;da değerlendirin
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://static.vecteezy.com/system/resources/previews/066/712/316/non_2x/google-business-icon-logo-symbol-free-png.png"
+              alt="Google"
+              className="w-5 h-5 object-contain"
+            />
+            Google&apos;da değerlendirin
           </a>
         )}
       </div>
