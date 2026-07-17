@@ -1,42 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import { InstagramIcon, WhatsAppIcon, MapsIcon } from './SocialIcons';
+import { SOCIAL_PLATFORMS } from './SocialIcons';
 
-const PLATFORMS = [
-  { key: 'instagram', label: 'Instagram', icon: <InstagramIcon className="w-4 h-4" />, color: '#E1306C', prefix: 'https://instagram.com/', placeholder: 'miabistro' },
-  { key: 'whatsapp', label: 'WhatsApp', icon: <WhatsAppIcon className="w-4 h-4" />, color: '#25D366', prefix: 'https://wa.me/', placeholder: '905001234567' },
-  { key: 'maps', label: 'Google Harita', icon: <MapsIcon className="w-4 h-4" />, color: '#EA4335', prefix: '', placeholder: 'https://maps.google.com/...' },
-];
+type Entry = { platform: string; handle: string };
 
-type SocialEntry = { platform: string; handle: string };
+function urlToHandle(platform: string, url: string): string {
+  if (!url) return '';
+  const p = SOCIAL_PLATFORMS.find(p => p.key === platform);
+  if (!p || !p.prefix) return url;
+  return url.replace(p.prefix, '').replace('https://www.instagram.com/', '').replace('@', '');
+}
+
+function handleToUrl(platform: string, handle: string): string {
+  const p = SOCIAL_PLATFORMS.find(p => p.key === platform);
+  if (!p) return handle;
+  if (!p.prefix) return handle; // maps, whatsapp — raw value
+  return p.prefix + handle;
+}
 
 export default function SocialMediaEditor({
-  initialInstagram,
-  initialWhatsapp,
-  initialMaps,
+  initialValues,
 }: {
-  initialInstagram?: string | null;
-  initialWhatsapp?: string | null;
-  initialMaps?: string | null;
+  initialValues?: Record<string, string | null>;
 }) {
-  function handleToEntries(): SocialEntry[] {
-    const entries: SocialEntry[] = [];
-    if (initialInstagram) entries.push({ platform: 'instagram', handle: initialInstagram.replace('https://instagram.com/', '').replace('https://www.instagram.com/', '') });
-    if (initialWhatsapp) entries.push({ platform: 'whatsapp', handle: initialWhatsapp.replace('https://wa.me/', '') });
-    if (initialMaps) entries.push({ platform: 'maps', handle: initialMaps });
-    return entries;
-  }
+  const [entries, setEntries] = useState<Entry[]>(() => {
+    const result: Entry[] = [];
+    if (!initialValues) return result;
+    SOCIAL_PLATFORMS.forEach(p => {
+      const val = initialValues[p.key];
+      if (val) result.push({ platform: p.key, handle: urlToHandle(p.key, val) });
+    });
+    return result;
+  });
 
-  const [entries, setEntries] = useState<SocialEntry[]>(handleToEntries);
-  const [selectedPlatform, setSelectedPlatform] = useState(PLATFORMS[0].key);
+  const [selectedPlatform, setSelectedPlatform] = useState(SOCIAL_PLATFORMS[0].key);
   const [handle, setHandle] = useState('');
+
+  const currentPlatform = SOCIAL_PLATFORMS.find(p => p.key === selectedPlatform)!;
 
   function add() {
     if (!handle.trim()) return;
-    const already = entries.find(e => e.platform === selectedPlatform);
-    if (already) {
-      setEntries(entries.map(e => e.platform === selectedPlatform ? { ...e, handle: handle.trim() } : e));
+    const already = entries.findIndex(e => e.platform === selectedPlatform);
+    if (already >= 0) {
+      setEntries(entries.map((e, i) => i === already ? { ...e, handle: handle.trim() } : e));
     } else {
       setEntries([...entries, { platform: selectedPlatform, handle: handle.trim() }]);
     }
@@ -47,35 +54,29 @@ export default function SocialMediaEditor({
     setEntries(entries.filter(e => e.platform !== platform));
   }
 
-  // Hidden input değerlerini hesapla
-  function toUrl(entry: SocialEntry) {
-    const p = PLATFORMS.find(p => p.key === entry.platform)!;
-    return p.prefix + entry.handle;
-  }
-
-  const instagram = entries.find(e => e.platform === 'instagram');
-  const whatsapp = entries.find(e => e.platform === 'whatsapp');
-  const maps = entries.find(e => e.platform === 'maps');
-
-  const currentPlatform = PLATFORMS.find(p => p.key === selectedPlatform)!;
-
   return (
     <div>
-      {/* Hidden inputs for form submit */}
-      <input type="hidden" name="instagram_url" value={instagram ? toUrl(instagram) : ''} />
-      <input type="hidden" name="whatsapp_number" value={whatsapp ? whatsapp.handle : ''} />
-      <input type="hidden" name="google_maps_url" value={maps ? maps.handle : ''} />
+      {/* Hidden inputs */}
+      {SOCIAL_PLATFORMS.map(p => {
+        const entry = entries.find(e => e.platform === p.key);
+        return (
+          <input key={p.key} type="hidden"
+            name={`social_${p.key}`}
+            value={entry ? handleToUrl(p.key, entry.handle) : ''} />
+        );
+      })}
 
       {/* Mevcut linkler */}
       {entries.length > 0 && (
-        <div className="flex flex-col gap-2 mb-3">
+        <div className="flex flex-col gap-1.5 mb-3">
           {entries.map(e => {
-            const p = PLATFORMS.find(p => p.key === e.platform)!;
+            const p = SOCIAL_PLATFORMS.find(p => p.key === e.platform)!;
             return (
               <div key={e.platform} className="flex items-center gap-2 border border-gray-100 rounded-lg px-3 py-2">
-                <span style={{ color: p.color }}>{p.icon}</span>
-                <span className="text-sm flex-1 truncate">{e.handle}</span>
-                <button type="button" onClick={() => remove(e.platform)} className="text-xs text-red-400">Sil</button>
+                <span className="w-6 h-6 rounded-md flex items-center justify-center text-white flex-shrink-0"
+                  style={{ background: p.color }}>{p.svg}</span>
+                <span className="text-xs text-gray-600 flex-1 truncate">{p.label}: {e.handle}</span>
+                <button type="button" onClick={() => remove(e.platform)} className="text-xs text-red-400 flex-shrink-0">Sil</button>
               </div>
             );
           })}
@@ -94,23 +95,20 @@ export default function SocialMediaEditor({
         />
         <select
           value={selectedPlatform}
-          onChange={e => { setSelectedPlatform(e.target.value); setHandle(''); }}
+          onChange={e => { setSelectedPlatform(e.target.value as typeof SOCIAL_PLATFORMS[number]['key']); setHandle(''); }}
           className="border border-gray-200 rounded-md px-2 py-1.5 text-sm"
         >
-          {PLATFORMS.map(p => (
+          {SOCIAL_PLATFORMS.map(p => (
             <option key={p.key} value={p.key}>{p.label}</option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={add}
-          className="text-sm bg-gray-800 text-white px-3 py-1.5 rounded-md"
-        >
+        <button type="button" onClick={add}
+          className="text-sm bg-gray-800 text-white px-3 py-1.5 rounded-md flex-shrink-0">
           Ekle
         </button>
       </div>
       <p className="text-[11px] text-gray-400 mt-1.5">
-        {selectedPlatform === 'maps' ? 'Google Harita için tam URL yapıştırın' : `Sadece kullanıcı adını girin (örn: ${currentPlatform.placeholder})`}
+        {currentPlatform.prefix ? `Sadece kullanıcı adını girin (örn: ${currentPlatform.placeholder})` : 'Tam URL yapıştırın'}
       </p>
     </div>
   );

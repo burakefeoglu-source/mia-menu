@@ -134,16 +134,16 @@ export default function ImportWizard({ tenantId, slug }: { tenantId: string; slu
         <table className="text-xs w-full border border-gray-200 rounded-lg overflow-hidden">
           <thead className="bg-gray-50">
             <tr>
-              {['Bölüm Adı', 'Ürün Adı', 'Fiyat', 'Açıklama'].map(h => (
+              {['Bölüm Adı', 'Ürün Adı', 'Fiyat', 'Açıklama', 'Kalori'].map(h => (
                 <th key={h} className="px-2 py-1.5 text-left font-medium text-gray-600">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {[
-              ['Kahvaltı', 'Serpme Kahvaltı', '450', 'Peynir, zeytin, bal'],
-              ['Kahvaltı', 'Menemen', '180', 'Domates, biber'],
-              ['Ana Yemekler', 'Izgara Köfte', '320', ''],
+              ['Kahvaltı', 'Serpme Kahvaltı', '450', 'Peynir, zeytin, bal', '680'],
+              ['Kahvaltı', 'Menemen', '180', 'Domates, biber', '320'],
+              ['Ana Yemekler', 'Izgara Köfte', '320', '', '450'],
             ].map((r, i) => (
               <tr key={i} className="border-t border-gray-100">
                 {r.map((c, j) => <td key={j} className="px-2 py-1.5 text-gray-600">{c}</td>)}

@@ -40,8 +40,7 @@ export default async function MenuPage({ params }: { params: { slug: string } })
     .eq('is_active', true)
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gte.${now}`)
-    .order('created_at', { ascending: false })
-    .limit(1);
+    .order('created_at', { ascending: false });
 
   const { data: translations } = await supabase
     .from('translations')
@@ -55,7 +54,7 @@ export default async function MenuPage({ params }: { params: { slug: string } })
       tenant={tenant!}
       sections={sections ?? []}
       products={products ?? []}
-      announcement={announcements?.[0] ?? null}
+      announcements={announcements ?? []}
       translations={translations ?? []}
     />
   );

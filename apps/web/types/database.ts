@@ -16,8 +16,19 @@ export type Tenant = {
   instagram_url: string | null;
   whatsapp_number: string | null;
   google_maps_url: string | null;
+  facebook_url: string | null;
+  tiktok_url: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  youtube_url: string | null;
   links_bio: string | null;
   working_hours: string | null;
+  linkedin_url: string | null;
+  facebook_url: string | null;
+  tiktok_url: string | null;
+  youtube_url: string | null;
+  twitter_url: string | null;
+  links_logo_url: string | null;
 };
 
 export type MenuSection = {

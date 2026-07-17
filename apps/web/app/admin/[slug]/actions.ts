@@ -137,9 +137,14 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       address: formData.get('address') as string,
       cover_image_url: (formData.get('cover_image_url') as string) || null,
       google_review_url: (formData.get('google_review_url') as string) || null,
-      instagram_url: (formData.get('instagram_url') as string) || null,
-      whatsapp_number: (formData.get('whatsapp_number') as string) || null,
-      google_maps_url: (formData.get('google_maps_url') as string) || null,
+      instagram_url: (formData.get('social_instagram') as string) || null,
+      whatsapp_number: (formData.get('social_whatsapp') as string) || null,
+      google_maps_url: (formData.get('social_maps') as string) || null,
+      facebook_url: (formData.get('social_facebook') as string) || null,
+      tiktok_url: (formData.get('social_tiktok') as string) || null,
+      linkedin_url: (formData.get('social_linkedin') as string) || null,
+      twitter_url: (formData.get('social_twitter') as string) || null,
+      youtube_url: (formData.get('social_youtube') as string) || null,
       working_hours: (formData.get('working_hours') as string) || null,
       notification_phone: (formData.get('notification_phone') as string) || null,
       callmebot_api_key: (formData.get('callmebot_api_key') as string) || null,
@@ -557,9 +562,15 @@ export async function updateLinksProfile(tenantId: string, slug: string, formDat
   const supabase = createClient();
   await supabase.from('tenants').update({
     links_bio: (formData.get('links_bio') as string) || null,
-    instagram_url: (formData.get('instagram_url') as string) || null,
-    whatsapp_number: (formData.get('whatsapp_number') as string) || null,
-    google_maps_url: (formData.get('google_maps_url') as string) || null,
+    cover_image_url: (formData.get('cover_image_url') as string) || null,
+    instagram_url: (formData.get('social_instagram') as string) || null,
+    whatsapp_number: (formData.get('social_whatsapp') as string) || null,
+    google_maps_url: (formData.get('social_maps') as string) || null,
+    facebook_url: (formData.get('social_facebook') as string) || null,
+    tiktok_url: (formData.get('social_tiktok') as string) || null,
+    linkedin_url: (formData.get('social_linkedin') as string) || null,
+    twitter_url: (formData.get('social_twitter') as string) || null,
+    youtube_url: (formData.get('social_youtube') as string) || null,
   }).eq('id', tenantId);
   revalidatePath(`/admin/${slug}/links`);
   revalidatePath(`/l/${slug}`);

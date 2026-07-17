@@ -27,11 +27,11 @@ const labels = {
   en: { allergenInfo: 'Allergen & calorie info', search: 'Search dishes...', notFound: 'No items found', allergens: 'Allergens', noAllergens: 'No listed allergens', footnote: 'This information is shown in line with the regulation effective July 1, 2026.', favorites: 'Favorites', leaveReview: 'Leave feedback' },
 };
 
-export default function MenuClient({ tenant, sections, products, announcement, translations }: {
+export default function MenuClient({ tenant, sections, products, announcements, translations }: {
   tenant: Tenant;
   sections: MenuSection[];
   products: ProductWithExtras[];
-  announcement: Announcement | null;
+  announcements: Announcement[];
   translations: Translation[];
 }) {
   const layout = (tenant.menu_layout as 'classic' | 'dark' | 'minimal') ?? 'classic';
@@ -55,7 +55,27 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
   const [showReview, setShowReview] = useState(false);
-  const [posterDismissed, setPosterDismissed] = useState(false);
+  const textAnnouncements = announcements.filter(a => a.kind === 'text');
+  const posterAnnouncement = announcements.find(a => a.kind === 'poster') ?? null;
+  const [currentTextIdx, setCurrentTextIdx] = useState(0);
+  const [posterDismissed, setPosterDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!sessionStorage.getItem(`popup_shown_${tenant.slug}`);
+  });
+
+  useEffect(() => {
+    if (posterAnnouncement && !posterDismissed) {
+      sessionStorage.setItem(`popup_shown_${tenant.slug}`, '1');
+    }
+  }, [posterAnnouncement, posterDismissed, tenant.slug]);
+
+  useEffect(() => {
+    if (textAnnouncements.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentTextIdx(i => (i + 1) % textAnnouncements.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [textAnnouncements.length]);
   function trackProductClick(product: ProductWithExtras) {
     setSelected(product);
     fetch('/api/track', {
@@ -140,9 +160,16 @@ export default function MenuClient({ tenant, sections, products, announcement, t
         <div className="px-4 py-3">
           <h1 className="text-lg font-semibold text-white">{tenant.name}</h1>
           <SocialLinks
-            instagram={tenant.instagram_url}
-            whatsapp={tenant.whatsapp_number}
-            maps={tenant.google_maps_url}
+            socialLinks={{
+              instagram: tenant.instagram_url,
+              whatsapp: tenant.whatsapp_number,
+              maps: tenant.google_maps_url,
+              facebook: tenant.facebook_url,
+              tiktok: tenant.tiktok_url,
+              linkedin: tenant.linkedin_url,
+              twitter: tenant.twitter_url,
+              youtube: tenant.youtube_url,
+            }}
             workingHours={tenant.working_hours}
             variant="on-dark"
           />
@@ -164,9 +191,16 @@ export default function MenuClient({ tenant, sections, products, announcement, t
           <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-40 object-cover rounded-xl" />
         )}
         <SocialLinks
-          instagram={tenant.instagram_url}
-          whatsapp={tenant.whatsapp_number}
-          maps={tenant.google_maps_url}
+          socialLinks={{
+            instagram: tenant.instagram_url,
+            whatsapp: tenant.whatsapp_number,
+            maps: tenant.google_maps_url,
+            facebook: tenant.facebook_url,
+            tiktok: tenant.tiktok_url,
+            linkedin: tenant.linkedin_url,
+            twitter: tenant.twitter_url,
+            youtube: tenant.youtube_url,
+          }}
           workingHours={tenant.working_hours}
           variant="on-light"
         />
@@ -186,9 +220,16 @@ export default function MenuClient({ tenant, sections, products, announcement, t
             {langToggleLight}
           </div>
           <SocialLinks
-            instagram={tenant.instagram_url}
-            whatsapp={tenant.whatsapp_number}
-            maps={tenant.google_maps_url}
+            socialLinks={{
+              instagram: tenant.instagram_url,
+              whatsapp: tenant.whatsapp_number,
+              maps: tenant.google_maps_url,
+              facebook: tenant.facebook_url,
+              tiktok: tenant.tiktok_url,
+              linkedin: tenant.linkedin_url,
+              twitter: tenant.twitter_url,
+              youtube: tenant.youtube_url,
+            }}
             workingHours={tenant.working_hours}
             variant="on-light"
           />
@@ -201,23 +242,31 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   const body = (
     <>
       {/* Duyuru */}
-      {announcement && (
-        <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5">
-          {announcement.kind === 'poster' && announcement.image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={announcement.image_url} alt={announcement.title ?? ''} className="w-full rounded-md mb-2" />
-          )}
-          <div className="flex items-start gap-2">
-            <span className="text-base flex-shrink-0 mt-0.5">
-              {(announcement as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}
-            </span>
-            <div>
-              {announcement.title && <p className="text-sm font-medium text-amber-900">{announcement.title}</p>}
-              {announcement.message && <p className="text-xs text-amber-700 mt-0.5">{announcement.message}</p>}
+      {/* Metin duyuruları - dönen */}
+      {textAnnouncements.length > 0 && (() => {
+        const a = textAnnouncements[currentTextIdx];
+        return (
+          <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5 transition-all">
+            <div className="flex items-start gap-2">
+              <span className="text-base flex-shrink-0 mt-0.5">
+                {(a as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}
+              </span>
+              <div className="flex-1 min-w-0">
+                {a.title && <p className="text-sm font-medium text-amber-900">{a.title}</p>}
+                {a.message && <p className="text-xs text-amber-700 mt-0.5">{a.message}</p>}
+              </div>
+              {textAnnouncements.length > 1 && (
+                <div className="flex gap-1 flex-shrink-0 mt-1">
+                  {textAnnouncements.map((_, i) => (
+                    <button key={i} onClick={() => setCurrentTextIdx(i)}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentTextIdx ? 'bg-amber-600' : 'bg-amber-200'}`} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Günün menüsü */}
       {products.filter((p) => p.is_daily_special).length > 0 && (
@@ -399,21 +448,21 @@ export default function MenuClient({ tenant, sections, products, announcement, t
   );
 
   /* ─── MODALLER ─── */
-  const posterModal = announcement?.kind === 'poster' && !posterDismissed && (
+  const posterModal = posterAnnouncement && !posterDismissed && (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50"
       onClick={() => setPosterDismissed(true)}>
       <div className="bg-white rounded-xl overflow-hidden max-w-sm w-full shadow-xl"
         onClick={(e) => e.stopPropagation()}>
-        {announcement.image_url && (
+        {posterAnnouncement.image_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={announcement.image_url} alt={announcement.title ?? ''} className="w-full" />
+          <img src={posterAnnouncement.image_url} alt={posterAnnouncement.title ?? ''} className="w-full" />
         )}
         <div className="p-4">
           <div className="flex items-center gap-2 mb-1">
-            <span>{(announcement as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}</span>
-            {announcement.title && <p className="font-medium text-gray-900">{announcement.title}</p>}
+            <span>{(posterAnnouncement as { icon_type?: string }).icon_type === 'kampanya' ? '🏷️' : '📢'}</span>
+            {posterAnnouncement.title && <p className="font-medium text-gray-900">{posterAnnouncement.title}</p>}
           </div>
-          {announcement.message && <p className="text-sm text-gray-600 mt-1">{announcement.message}</p>}
+          {posterAnnouncement.message && <p className="text-sm text-gray-600 mt-1">{posterAnnouncement.message}</p>}
           <button onClick={() => setPosterDismissed(true)}
             className="w-full mt-3 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">
             Kapat
