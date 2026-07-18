@@ -117,7 +117,12 @@ export default function SectionsList({
               {editingSection !== s.id && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
-                    onClick={() => toggleSectionActive(s.id, slug, !s.is_active)}
+                    onClick={() => {
+                      setLocalSections(prev => prev.map(sec =>
+                        sec.id === s.id ? { ...sec, is_active: !sec.is_active } : sec
+                      ));
+                      toggleSectionActive(s.id, slug, !s.is_active);
+                    }}
                     className={`text-xs px-1.5 py-0.5 rounded ${s.is_active ? 'text-gray-400' : 'text-amber-600 bg-amber-50'}`}
                     title={s.is_active ? 'Pasif yap' : 'Aktif yap'}
                   >
@@ -150,6 +155,11 @@ export default function SectionsList({
                       return [...others, ...newOrder];
                     });
                   }}
+                  onToggleActive={(productId, active) => {
+                    setLocalProducts(prev => prev.map(p =>
+                      p.id === productId ? { ...p, is_active: active } : p
+                    ));
+                  }}
                 />
                 <form action={boundAddProduct} className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-100">
                   <input name="name" placeholder="Ürün adı" required
@@ -176,6 +186,7 @@ function DraggableProductList({
   editingProduct,
   setEditingProduct,
   onReorder,
+  onToggleActive,
 }: {
   slug: string;
   sectionId: string;
@@ -183,6 +194,7 @@ function DraggableProductList({
   editingProduct: string | null;
   setEditingProduct: (id: string | null) => void;
   onReorder: (newOrder: ProductWithAllergens[]) => void;
+  onToggleActive: (productId: string, active: boolean) => void;
 }) {
   const [items, setItems] = useState(products);
   const dragIndex = useRef<number | null>(null);
@@ -253,7 +265,13 @@ function DraggableProductList({
               {p.calories ? `${p.calories} kcal` : ''}
               <span className="font-medium text-gray-900">{p.price} ₺</span>
               <button
-                onClick={() => toggleProductActive(p.id, slug, !p.is_active)}
+                onClick={() => {
+                  setItems(prev => prev.map(item =>
+                    item.id === p.id ? { ...item, is_active: !p.is_active } : item
+                  ));
+                  onToggleActive(p.id, !p.is_active);
+                  toggleProductActive(p.id, slug, !p.is_active);
+                }}
                 className={`px-1.5 py-0.5 rounded text-xs ${p.is_active ? 'text-gray-300' : 'text-amber-600 bg-amber-50 font-medium'}`}
                 title={p.is_active ? 'Pasif yap' : 'Aktif yap'}
               >
