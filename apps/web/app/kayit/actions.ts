@@ -61,7 +61,7 @@ export async function registerRestaurant(
     if (authError?.message?.includes('already registered')) {
       return { fieldError: { email: 'Bu e-posta zaten kayıtlı.' } };
     }
-    return { error: 'Hesap oluşturulamadı: ' + (authError?.message ?? 'Bilinmeyen hata') };
+    return { error: 'Hesap oluşturulamadı: ' + (authError?.message || authError?.status || JSON.stringify(authError) || 'Bilinmeyen hata') };
   }
 
   const userId = authData.user.id;
