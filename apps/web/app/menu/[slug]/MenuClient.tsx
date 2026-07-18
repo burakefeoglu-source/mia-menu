@@ -227,6 +227,7 @@ export default function MenuClient({ tenant, sections, products, announcements, 
           }}
           workingHours={tenant.working_hours}
           variant="on-light"
+          accentBg={theme.accentBg}
         />
       </header>
     );
@@ -269,6 +270,7 @@ export default function MenuClient({ tenant, sections, products, announcements, 
             }}
             workingHours={tenant.working_hours}
             variant="on-light"
+            accentBg={theme.accentBg}
           />
         </div>
       </header>
