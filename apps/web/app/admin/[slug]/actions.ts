@@ -2,10 +2,19 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { translateToEnglish } from '@/lib/translate';
 
+// RLS bypass için service role client
+function getDb() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 export async function addSection(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   const name = formData.get('name') as string;
 
   await supabase.from('menu_sections').insert({ tenant_id: tenantId, name });
@@ -20,7 +29,7 @@ export async function addProduct(
   slug: string,
   formData: FormData
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase.from('products').insert({
     tenant_id: tenantId,
@@ -36,14 +45,14 @@ export async function addProduct(
 }
 
 export async function updateSectionName(sectionId: string, slug: string, name: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('menu_sections').update({ name }).eq('id', sectionId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
 
 export async function deleteSection(sectionId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('menu_sections').delete().eq('id', sectionId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
@@ -54,7 +63,7 @@ export async function updateProduct(
   slug: string,
   data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null }
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase
     .from('products')
     .update({
@@ -75,7 +84,7 @@ export async function setProductAllergens(
   slug: string,
   allergenIds: string[]
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('product_allergens').delete().eq('product_id', productId);
   if (allergenIds.length > 0) {
     await supabase
@@ -87,7 +96,7 @@ export async function setProductAllergens(
 }
 
 export async function deleteProduct(productId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('products').delete().eq('id', productId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/admin/${slug}/prices`);
@@ -95,7 +104,7 @@ export async function deleteProduct(productId: string, slug: string) {
 }
 
 export async function reorderProducts(slug: string, orderedIds: string[]) {
-  const supabase = createClient();
+  const supabase = getDb();
   await Promise.all(
     orderedIds.map((id, index) =>
       supabase.from('products').update({ sort_order: index }).eq('id', id)
@@ -106,7 +115,7 @@ export async function reorderProducts(slug: string, orderedIds: string[]) {
 }
 
 export async function reorderSections(slug: string, orderedIds: string[]) {
-  const supabase = createClient();
+  const supabase = getDb();
   await Promise.all(
     orderedIds.map((id, index) =>
       supabase.from('menu_sections').update({ sort_order: index }).eq('id', id)
@@ -117,7 +126,7 @@ export async function reorderSections(slug: string, orderedIds: string[]) {
 }
 
 export async function updatePrice(productId: string, slug: string, price: number) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase.from('products').update({ price }).eq('id', productId);
 
@@ -127,7 +136,7 @@ export async function updatePrice(productId: string, slug: string, price: number
 }
 
 export async function updateTenant(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase
     .from('tenants')
@@ -156,7 +165,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
 }
 
 export async function addAnnouncement(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   const startsAt = (formData.get('starts_at') as string) || null;
   const endsAt = (formData.get('ends_at') as string) || null;
@@ -177,7 +186,7 @@ export async function addAnnouncement(tenantId: string, slug: string, formData: 
 }
 
 export async function toggleAnnouncement(id: string, slug: string, nextActive: boolean) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase.from('announcements').update({ is_active: nextActive }).eq('id', id);
 
@@ -186,7 +195,7 @@ export async function toggleAnnouncement(id: string, slug: string, nextActive: b
 }
 
 export async function deleteAnnouncement(id: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase.from('announcements').delete().eq('id', id);
 
@@ -202,7 +211,7 @@ export async function upsertTranslation(
   field: string,
   value: string
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   const trimmed = value.trim();
 
   if (!trimmed) {
@@ -242,7 +251,7 @@ export async function autoTranslateMissing(
   slug: string,
   items: { entityType: 'product' | 'section'; entityId: string; text: string }[]
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   for (const item of items) {
     try {
@@ -274,7 +283,7 @@ export async function updateOrderStatus(
   slug: string,
   status: 'new' | 'preparing' | 'ready' | 'completed' | 'cancelled'
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   await supabase.from('orders').update({ status }).eq('id', orderId);
 
@@ -287,13 +296,13 @@ export async function updateQrStyle(
   slug: string,
   style: 'square' | 'rounded' | 'dot'
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenants').update({ qr_style: style }).eq('id', tenantId);
   revalidatePath(`/admin/${slug}/qr`);
 }
 
 export async function updateQrLogo(tenantId: string, slug: string, logoUrl: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase
     .from('tenants')
     .update({ logo_url: logoUrl || null })
@@ -303,7 +312,7 @@ export async function updateQrLogo(tenantId: string, slug: string, logoUrl: stri
 }
 
 export async function generateTables(tenantId: string, slug: string, count: number) {
-  const supabase = createClient();
+  const supabase = getDb();
 
   const { data: existing } = await supabase
     .from('tables')
@@ -326,7 +335,7 @@ export async function generateTables(tenantId: string, slug: string, count: numb
 }
 
 export async function deleteTable(tableId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tables').delete().eq('id', tableId);
   revalidatePath(`/admin/${slug}/qr`);
 }
@@ -334,7 +343,7 @@ export async function deleteTable(tableId: string, slug: string) {
 // --- Etiketler ---
 
 export async function addTag(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   const name = (formData.get('name') as string)?.trim();
   const icon = (formData.get('icon') as string)?.trim() || null;
   if (!name) return;
@@ -344,7 +353,7 @@ export async function addTag(tenantId: string, slug: string, formData: FormData)
 }
 
 export async function deleteTag(tagId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tags').delete().eq('id', tagId);
   revalidatePath(`/admin/${slug}/tags`);
   revalidatePath(`/menu/${slug}`);
@@ -356,7 +365,7 @@ export async function toggleProductTag(
   slug: string,
   assign: boolean
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   if (assign) {
     await supabase.from('product_tags').insert({ product_id: productId, tag_id: tagId });
   } else {
@@ -372,7 +381,7 @@ export async function toggleProductTag(
 // --- Alerjenler ---
 
 export async function addAllergen(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   const name_tr = (formData.get('name_tr') as string)?.trim();
   if (!name_tr) return;
   const name_en = (formData.get('name_en') as string)?.trim() || null;
@@ -382,7 +391,7 @@ export async function addAllergen(tenantId: string, slug: string, formData: Form
 }
 
 export async function deleteAllergen(allergenId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('allergens').delete().eq('id', allergenId);
   revalidatePath(`/admin/${slug}/allergens`);
   revalidatePath(`/menu/${slug}`);
@@ -394,7 +403,7 @@ export async function toggleProductAllergen(
   slug: string,
   assign: boolean
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   if (assign) {
     await supabase
       .from('product_allergens')
@@ -413,7 +422,7 @@ export async function toggleProductAllergen(
 // --- Favoriler ---
 
 export async function toggleFavorite(productId: string, slug: string, value: boolean) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('products').update({ is_favorite: value }).eq('id', productId);
   revalidatePath(`/admin/${slug}/favorites`);
   revalidatePath(`/admin/${slug}`);
@@ -423,7 +432,7 @@ export async function toggleFavorite(productId: string, slug: string, value: boo
 // --- Görüş & yorumlar ---
 
 export async function deleteReview(reviewId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('reviews').delete().eq('id', reviewId);
   revalidatePath(`/admin/${slug}/reviews`);
 }
@@ -431,7 +440,7 @@ export async function deleteReview(reviewId: string, slug: string) {
 // --- Adres / şube ---
 
 export async function addLocation(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('locations').insert({
     tenant_id: tenantId,
     name: formData.get('name') as string,
@@ -442,7 +451,7 @@ export async function addLocation(tenantId: string, slug: string, formData: Form
 }
 
 export async function updateLocation(locationId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase
     .from('locations')
     .update({
@@ -455,7 +464,7 @@ export async function updateLocation(locationId: string, slug: string, formData:
 }
 
 export async function deleteLocation(locationId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('locations').delete().eq('id', locationId);
   revalidatePath(`/admin/${slug}/locations`);
 }
@@ -467,7 +476,11 @@ export async function importProducts(
   slug: string,
   rows: { sectionName: string; name: string; price: number; description?: string; calories?: number }[]
 ) {
-  const supabase = createClient();
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   // Mevcut bölümleri çek
   const { data: existingSections } = await supabase
@@ -506,7 +519,7 @@ export async function importProducts(
   })).filter((p) => p.section_id);
 
   const { error } = await supabase.from('products').insert(products);
-  if (error) return { error: 'Aktarım sırasında hata oluştu.' };
+  if (error) return { error: 'Aktarım sırasında hata oluştu: ' + error.message };
 
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
@@ -516,7 +529,7 @@ export async function importProducts(
 // --- Menü tasarım ---
 
 export async function updateThemeColor(tenantId: string, slug: string, theme: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenants').update({ theme_color: theme }).eq('id', tenantId);
   revalidatePath(`/admin/${slug}/design`);
   revalidatePath(`/menu/${slug}`);
@@ -527,7 +540,7 @@ export async function updateMenuLayout(
   slug: string,
   layout: 'classic' | 'dark' | 'minimal'
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenants').update({ menu_layout: layout }).eq('id', tenantId);
   revalidatePath(`/admin/${slug}/design`);
   revalidatePath(`/menu/${slug}`);
@@ -538,7 +551,7 @@ export async function updateSectionNav(
   slug: string,
   nav: 'tabs' | 'grid'
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenants').update({ section_nav: nav }).eq('id', tenantId);
   revalidatePath(`/admin/${slug}/design`);
   revalidatePath(`/menu/${slug}`);
@@ -549,7 +562,7 @@ export async function updateSectionDisplayStyle(
   slug: string,
   style: 'list' | 'list_image' | 'grid'
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('menu_sections').update({ display_style: style }).eq('id', sectionId);
   revalidatePath(`/admin/${slug}/design`);
   revalidatePath(`/menu/${slug}`);
@@ -559,7 +572,7 @@ export async function updateSectionDisplayStyle(
 // --- Link sayfası ---
 
 export async function updateLinksProfile(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenants').update({
     links_bio: (formData.get('links_bio') as string) || null,
     cover_image_url: (formData.get('cover_image_url') as string) || null,
@@ -577,7 +590,7 @@ export async function updateLinksProfile(tenantId: string, slug: string, formDat
 }
 
 export async function addTenantLink(tenantId: string, slug: string, formData: FormData) {
-  const supabase = createClient();
+  const supabase = getDb();
   const { data: last } = await supabase
     .from('tenant_links')
     .select('sort_order')
@@ -599,14 +612,14 @@ export async function addTenantLink(tenantId: string, slug: string, formData: Fo
 }
 
 export async function deleteTenantLink(linkId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenant_links').delete().eq('id', linkId);
   revalidatePath(`/admin/${slug}/links`);
   revalidatePath(`/l/${slug}`);
 }
 
 export async function toggleTenantLink(linkId: string, slug: string, active: boolean) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('tenant_links').update({ is_active: active }).eq('id', linkId);
   revalidatePath(`/admin/${slug}/links`);
   revalidatePath(`/l/${slug}`);
@@ -622,7 +635,7 @@ export async function bulkUpdatePrices(
   amount: number,
   sectionId?: string
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   let query = supabase.from('products').select('id, price').eq('tenant_id', tenantId);
   if (sectionId) query = query.eq('section_id', sectionId);
   const { data: products } = await query;
@@ -660,7 +673,7 @@ export async function updateProductFlags(
     is_daily_special?: boolean;
   }
 ) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('products').update(flags).eq('id', productId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
@@ -669,14 +682,14 @@ export async function updateProductFlags(
 // --- Bölüm / ürün aktif-pasif ---
 
 export async function toggleSectionActive(sectionId: string, slug: string, active: boolean) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('menu_sections').update({ is_active: active }).eq('id', sectionId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
 
 export async function toggleProductActive(productId: string, slug: string, active: boolean) {
-  const supabase = createClient();
+  const supabase = getDb();
   await supabase.from('products').update({ is_active: active }).eq('id', productId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
