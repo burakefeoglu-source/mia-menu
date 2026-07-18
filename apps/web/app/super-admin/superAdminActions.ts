@@ -81,7 +81,13 @@ export async function createTenantManual(formData: FormData) {
     .replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
   const { data: existing } = await db.from('tenants').select('id').eq('slug', slug).maybeSingle();
-  if (existing) return { error: `"${slug}" slug zaten alınmış` };
+  if (existing) {
+    // Yarım kalmış tenant mı? staff_users kontrolü
+    const { data: staff } = await db.from('staff_users').select('id').eq('tenant_id', existing.id).maybeSingle();
+    if (staff) return { error: `"${slug}" slug zaten alınmış` };
+    // Sahipsiz tenant — sil ve devam et
+    await db.from('tenants').delete().eq('id', existing.id);
+  }
 
   const { data: authData, error: authError } = await db.auth.admin.createUser({
     email,
