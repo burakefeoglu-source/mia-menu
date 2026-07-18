@@ -89,7 +89,7 @@ export default function ImportWizard({ tenantId, slug }: { tenantId: string; slu
     const res = await importProducts(tenantId, slug, preview);
     setResult(res);
     setImporting(false);
-    setStep('done');
+    if (!res?.error) setStep('done');
   }
 
   function reset() {
@@ -234,6 +234,9 @@ export default function ImportWizard({ tenantId, slug }: { tenantId: string; slu
           {importing ? 'Aktarılıyor...' : `${preview.length} ürünü aktar`}
         </button>
       </div>
+      {result?.error && (
+        <p className="text-sm text-red-600 mt-3">❌ {result.error}</p>
+      )}
     </div>
   );
 
