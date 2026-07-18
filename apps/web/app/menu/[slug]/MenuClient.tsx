@@ -210,11 +210,24 @@ export default function MenuClient({ tenant, sections, products, announcements, 
     /* classic (default) */
     return (
       <header className={`${theme.headerBg}`}>
-        {tenant.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-44 object-cover" />
-        )}
-        <div className="px-4 py-3">
+        <div className="relative">
+          {tenant.cover_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-44 object-cover" />
+          )}
+          {(tenant as { logo_url?: string | null }).logo_url && (
+            <div className={`flex justify-center ${tenant.cover_image_url ? 'absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2' : 'pt-4'}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={(tenant as { logo_url: string }).logo_url}
+                alt={`${tenant.name} logo`}
+                className="w-20 h-20 object-contain rounded-xl bg-white"
+                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.18)' }}
+              />
+            </div>
+          )}
+        </div>
+        <div className={`px-4 py-3 ${tenant.cover_image_url && (tenant as { logo_url?: string | null }).logo_url ? 'pt-12' : ''}`}>
           <div className="flex justify-between items-center">
             <h1 className={`text-base font-semibold ${theme.headerText}`}>{tenant.name}</h1>
             {langToggleLight}

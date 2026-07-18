@@ -145,6 +145,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       phone: formData.get('phone') as string,
       address: formData.get('address') as string,
       cover_image_url: (formData.get('cover_image_url') as string) || null,
+      logo_url: (formData.get('logo_url') as string) || null,
       google_review_url: (formData.get('google_review_url') as string) || null,
       instagram_url: (formData.get('social_instagram') as string) || null,
       whatsapp_number: (formData.get('social_whatsapp') as string) || null,

@@ -8,6 +8,7 @@ import type { Tenant } from '@/types/database';
 
 export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: string }) {
   const [coverUrl, setCoverUrl] = useState(tenant.cover_image_url ?? '');
+  const [logoUrl, setLogoUrl] = useState(tenant.logo_url ?? '');
 
   const bound = updateTenant.bind(null, tenant.id, slug);
 
@@ -25,6 +26,7 @@ export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: s
   return (
     <form action={async (fd) => {
       fd.set('cover_image_url', coverUrl);
+      fd.set('logo_url', logoUrl);
       await bound(fd);
     }} className="flex flex-col gap-3 max-w-sm">
 
@@ -61,6 +63,21 @@ export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: s
         {coverUrl && (
           <button type="button" onClick={() => setCoverUrl('')}
             className="text-xs text-red-500 mt-1">Fotoğrafı sil</button>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Logo</label>
+        <p className="text-[11px] text-gray-400 mb-1.5">Kapak fotoğrafının üzerinde shadow ile gösterilir.</p>
+        <ImageUploader
+          folder="logos"
+          currentUrl={logoUrl}
+          onUploaded={(url) => setLogoUrl(url)}
+          label="Logo yükle"
+        />
+        {logoUrl && (
+          <button type="button" onClick={() => setLogoUrl('')}
+            className="text-xs text-red-500 mt-1">Logoyu sil</button>
         )}
       </div>
 
