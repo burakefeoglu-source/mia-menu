@@ -44,9 +44,12 @@ export async function addProduct(
   revalidatePath(`/menu/${slug}`);
 }
 
-export async function updateSectionName(sectionId: string, slug: string, name: string) {
+export async function updateSectionName(sectionId: string, slug: string, name: string, imageUrl?: string | null) {
   const supabase = getDb();
-  await supabase.from('menu_sections').update({ name }).eq('id', sectionId);
+  await supabase.from('menu_sections').update({
+    name,
+    image_url: imageUrl !== undefined ? imageUrl : undefined,
+  }).eq('id', sectionId);
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }

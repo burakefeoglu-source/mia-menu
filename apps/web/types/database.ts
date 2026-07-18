@@ -32,6 +32,7 @@ export type MenuSection = {
   sort_order: number;
   is_active: boolean;
   display_style: 'list' | 'list_image' | 'grid';
+  image_url: string | null;
 };
 
 export type Allergen = {

@@ -367,14 +367,19 @@ export default function MenuClient({ tenant, sections, products, announcements, 
         {sectionNav === 'grid' && activeSection === null && (
           <div className="grid grid-cols-2 gap-3">
             {sections.map((s) => {
-              const cover = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+              const sectionImg = (s as { image_url?: string | null }).image_url;
+              const productImg = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+              const cover = sectionImg || productImg;
               return (
                 <button key={s.id} onClick={() => setActiveSection(s.id)}
                   className="border border-gray-200 rounded-xl overflow-hidden text-left">
                   {cover
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={cover} alt={s.name} className="w-full h-24 object-cover" />
-                    : <div className={`w-full h-24 ${theme.headerBg}`} />}
+                    ? <img src={cover} alt={s.name} className="w-full h-28 object-cover" />
+                    : <div className={`w-full h-28 flex items-center justify-center ${theme.headerBg}`}>
+                        <span className="text-2xl opacity-30">🍽️</span>
+                      </div>
+                  }
                   <div className="p-2.5">
                     <p className="text-sm font-semibold text-gray-900">{nameFor('section', s.id, s.name)}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{products.filter((p) => p.section_id === s.id).length} ürün</p>

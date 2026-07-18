@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { GripVertical } from 'lucide-react';
+import ImageUploader from '@/components/ImageUploader';
 import {
   addProduct,
   deleteProduct,
@@ -15,7 +16,6 @@ import {
   updateSectionName,
 } from '@/app/admin/[slug]/actions';
 import { AllergenIcon } from '@/lib/allergenIcons';
-import ImageUploader from '@/components/ImageUploader';
 import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 import type { MenuSection, Product } from '@/types/database';
 
@@ -87,20 +87,16 @@ export default function SectionsList({
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                 <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 cursor-grab" />
                 {editingSection === s.id ? (
-                  <form
-                    className="flex items-center gap-2 flex-1"
-                    onSubmit={async (e) => {
-                      e.preventDefault();
-                      const input = e.currentTarget.elements.namedItem('name') as HTMLInputElement;
-                      await updateSectionName(s.id, slug, input.value);
+                  <SectionEditForm
+                    section={s}
+                    slug={slug}
+                    onDone={() => {
                       setEditingSection(null);
+                      setLocalSections(prev => prev.map(sec =>
+                        sec.id === s.id ? { ...sec } : sec
+                      ));
                     }}
-                  >
-                    <input name="name" defaultValue={s.name} autoFocus
-                      className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm" />
-                    <button type="submit" className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md">Kaydet</button>
-                    <button type="button" onClick={() => setEditingSection(null)} className="text-xs text-gray-400">Vazgeç</button>
-                  </form>
+                  />
                 ) : (
                   <button
                     onClick={() => setExpanded((e) => ({ ...e, [s.id]: !e[s.id] }))}
@@ -175,6 +171,48 @@ export default function SectionsList({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function SectionEditForm({ section, slug, onDone }: {
+  section: MenuSection;
+  slug: string;
+  onDone: () => void;
+}) {
+  const [imageUrl, setImageUrl] = useState(section.image_url ?? '');
+
+  return (
+    <div className="flex flex-col gap-2 flex-1 py-1">
+      <div className="flex items-center gap-2">
+        <input name="name" id={`section-name-${section.id}`} defaultValue={section.name} autoFocus
+          className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm" />
+        <button
+          type="button"
+          onClick={async () => {
+            const input = document.getElementById(`section-name-${section.id}`) as HTMLInputElement;
+            await updateSectionName(section.id, slug, input.value, imageUrl || null);
+            onDone();
+          }}
+          className="text-xs bg-rose-600 text-white px-2 py-1 rounded-md"
+        >Kaydet</button>
+        <button type="button" onClick={onDone} className="text-xs text-gray-400">Vazgeç</button>
+      </div>
+      <div className="flex items-center gap-3">
+        <ImageUploader
+          folder="covers"
+          currentUrl={imageUrl}
+          onUploaded={(url) => setImageUrl(url)}
+          label="Bölüm fotoğrafı"
+        />
+        {imageUrl && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imageUrl} alt="" className="w-12 h-8 object-cover rounded-md" />
+            <button type="button" onClick={() => setImageUrl('')} className="text-xs text-red-400">Sil</button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
