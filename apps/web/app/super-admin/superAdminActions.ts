@@ -88,7 +88,7 @@ export async function createTenantManual(formData: FormData) {
   });
   if (authError || !authData.user) return { error: authError?.message ?? 'Kullanıcı oluşturulamadı' };
 
-  const { data: tenant, error: tenantError } = await supabase.from('tenants').insert({
+  const { data: tenant, error: tenantError } = await adminClient.from('tenants').insert({
     slug,
     name,
     phone: phone || null,
@@ -102,12 +102,12 @@ export async function createTenantManual(formData: FormData) {
 
   if (tenantError || !tenant) return { error: `İşletme oluşturulamadı: ${tenantError?.message}` };
 
-  await supabase.from('staff_users').insert({ user_id: authData.user.id, tenant_id: tenant.id, role: 'owner' });
-  await supabase.from('subscriptions').insert({
+  await adminClient.from('staff_users').insert({ user_id: authData.user.id, tenant_id: tenant.id, role: 'owner' });
+  await adminClient.from('subscriptions').insert({
     tenant_id: tenant.id, status: 'trialing',
     trial_ends_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
   });
-  await supabase.from('menu_sections').insert([
+  await adminClient.from('menu_sections').insert([
     { tenant_id: tenant.id, name: 'Başlangıçlar', sort_order: 1 },
     { tenant_id: tenant.id, name: 'Ana Yemekler', sort_order: 2 },
     { tenant_id: tenant.id, name: 'İçecekler', sort_order: 3 },
