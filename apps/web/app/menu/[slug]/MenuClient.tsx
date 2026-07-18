@@ -151,14 +151,25 @@ export default function MenuClient({ tenant, sections, products, announcements, 
   /* ─── HEADER ─── */
   const header = (() => {
     if (layout === 'dark') return (
-      <header className="relative bg-gray-900">
+      <header className={`relative ${theme.darkHeaderBg}`}>
         {tenant.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-48 object-cover opacity-60" />
+          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-48 object-cover opacity-30" />
+        )}
+        {(tenant as { logo_url?: string | null }).logo_url && (
+          <div className={`flex justify-center ${tenant.cover_image_url ? 'absolute inset-0 items-center' : 'pt-6 pb-2'}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={(tenant as { logo_url: string }).logo_url}
+              alt={`${tenant.name} logo`}
+              className="max-h-20 max-w-[55%] object-contain"
+              style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.7))' }}
+            />
+          </div>
         )}
         <div className="absolute top-3 right-3">{langToggleDark}</div>
         <div className="px-4 py-3">
-          <h1 className="text-lg font-semibold text-white">{tenant.name}</h1>
+          <h1 className={`text-lg font-semibold ${theme.darkHeaderText}`}>{tenant.name}</h1>
           <SocialLinks
             socialLinks={{
               instagram: tenant.instagram_url,
@@ -186,10 +197,23 @@ export default function MenuClient({ tenant, sections, products, announcements, 
           </div>
           {langToggleBorder}
         </div>
-        {tenant.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-40 object-cover rounded-xl" />
-        )}
+        <div className="relative">
+          {tenant.cover_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-40 object-cover rounded-xl" />
+          )}
+          {(tenant as { logo_url?: string | null }).logo_url && tenant.cover_image_url && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={(tenant as { logo_url: string }).logo_url}
+                alt={`${tenant.name} logo`}
+                className="max-h-16 max-w-[50%] object-contain"
+                style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.5))' }}
+              />
+            </div>
+          )}
+        </div>
         <SocialLinks
           socialLinks={{
             instagram: tenant.instagram_url,
