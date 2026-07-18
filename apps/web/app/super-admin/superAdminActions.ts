@@ -57,6 +57,14 @@ export async function saveTenantNote(tenantId: string, note: string) {
 // Manuel işletme ekle
 export async function createTenantManual(formData: FormData) {
   const supabase = await getAdminClient();
+
+  // Service role client oluştur
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+  const adminClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   const name = (formData.get('name') as string)?.trim();
   const email = (formData.get('email') as string)?.trim();
   const password = (formData.get('password') as string);
@@ -73,7 +81,7 @@ export async function createTenantManual(formData: FormData) {
   const { data: existing } = await supabase.from('tenants').select('id').eq('slug', slug).maybeSingle();
   if (existing) return { error: `"${slug}" slug zaten alınmış` };
 
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email,
     password: password || Math.random().toString(36).slice(-10),
     email_confirm: true,
