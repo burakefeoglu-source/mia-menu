@@ -34,7 +34,7 @@ export default function SocialMediaEditor({
     return result;
   });
 
-  const [selectedPlatform, setSelectedPlatform] = useState(SOCIAL_PLATFORMS[0].key);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>(SOCIAL_PLATFORMS[0].key);
   const [handle, setHandle] = useState('');
 
   const currentPlatform = SOCIAL_PLATFORMS.find(p => p.key === selectedPlatform)!;
@@ -95,7 +95,7 @@ export default function SocialMediaEditor({
         />
         <select
           value={selectedPlatform}
-          onChange={e => { setSelectedPlatform(e.target.value as typeof SOCIAL_PLATFORMS[number]['key']); setHandle(''); }}
+          onChange={e => { setSelectedPlatform(e.target.value); setHandle(''); }}
           className="border border-gray-200 rounded-md px-2 py-1.5 text-sm"
         >
           {SOCIAL_PLATFORMS.map(p => (
