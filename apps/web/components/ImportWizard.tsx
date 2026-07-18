@@ -66,18 +66,26 @@ export default function ImportWizard({ tenantId, slug }: { tenantId: string; slu
 
   function buildPreview() {
     const rows: Row[] = [];
+    // Sütun index'lerini önceden hesapla
+    const idxOf = (col?: string) => col ? headers.indexOf(col) : -1;
+    const sectionIdx = idxOf(mapping.sectionName);
+    const nameIdx = idxOf(mapping.name);
+    const priceIdx = idxOf(mapping.price);
+    const descIdx = idxOf(mapping.description);
+    const calIdx = idxOf(mapping.calories);
+
     for (const raw of rawRows.slice(0, 200)) {
-      const get = (col?: string) => col ? raw[headers.indexOf(col)] ?? '' : '';
-      const name = get(mapping.name).trim();
-      const priceStr = get(mapping.price).replace(/[^0-9.,]/g, '').replace(',', '.');
+      const get = (idx: number) => idx >= 0 ? String(raw[idx] ?? '').trim() : '';
+      const name = get(nameIdx);
+      const priceStr = get(priceIdx).replace(/[^0-9.,]/g, '').replace(',', '.');
       const price = parseFloat(priceStr);
       if (!name || isNaN(price)) continue;
       rows.push({
-        sectionName: get(mapping.sectionName).trim() || 'Genel',
+        sectionName: get(sectionIdx) || 'Genel',
         name,
         price,
-        description: get(mapping.description).trim() || undefined,
-        calories: get(mapping.calories) ? parseInt(get(mapping.calories)) : undefined,
+        description: get(descIdx) || undefined,
+        calories: get(calIdx) ? parseInt(get(calIdx)) : undefined,
       });
     }
     setPreview(rows);
@@ -181,16 +189,21 @@ export default function ImportWizard({ tenantId, slug }: { tenantId: string; slu
         ))}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <button onClick={reset} className="text-sm px-3 py-1.5 border border-gray-200 rounded-md text-gray-600">Geri</button>
         <button
-          onClick={buildPreview}
+          onClick={() => {
+            buildPreview();
+          }}
           disabled={!mapping.name || !mapping.price}
           className="text-sm px-4 py-1.5 bg-rose-600 text-white rounded-md disabled:opacity-50"
         >
           Önizle
         </button>
       </div>
+      {!mapping.sectionName && (
+        <p className="text-xs text-amber-600 mt-2">⚠️ Bölüm adı seçilmedi — tüm ürünler "Genel" bölümüne eklenecek</p>
+      )}
     </div>
   );
 
