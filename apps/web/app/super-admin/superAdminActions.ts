@@ -88,11 +88,19 @@ export async function createTenantManual(formData: FormData) {
   });
   if (authError || !authData.user) return { error: authError?.message ?? 'Kullanıcı oluşturulamadı' };
 
-  const { data: tenant } = await supabase.from('tenants').insert({
-    slug, name, phone: phone || null, default_locale: 'tr',
+  const { data: tenant, error: tenantError } = await supabase.from('tenants').insert({
+    slug,
+    name,
+    phone: phone || null,
+    default_locale: 'tr',
+    qr_style: 'square',
+    theme_color: 'rose',
+    menu_layout: 'classic',
+    section_nav: 'tabs',
+    is_active: true,
   }).select('id').single();
 
-  if (!tenant) return { error: 'İşletme oluşturulamadı' };
+  if (tenantError || !tenant) return { error: `İşletme oluşturulamadı: ${tenantError?.message}` };
 
   await supabase.from('staff_users').insert({ user_id: authData.user.id, tenant_id: tenant.id, role: 'owner' });
   await supabase.from('subscriptions').insert({
