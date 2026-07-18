@@ -52,6 +52,7 @@ const groups = [
     items: [
       { key: 'settings', label: 'İşletme ayarları', href: '/settings' },
       { key: 'locations', label: 'Adres/şube ayarları', href: '/locations' },
+      { key: 'abonelik', label: 'Abonelik', href: '/abonelik' },
     ],
     soon: ['Panel kullanıcıları', 'Entegrasyon'],
   },

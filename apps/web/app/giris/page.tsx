@@ -74,6 +74,9 @@ export default function LoginPage() {
             Hesabınız yok mu?{' '}
             <Link href="/kayit" className="text-rose-600 font-medium">Ücretsiz başlayın</Link>
           </p>
+          <p className="text-center text-xs text-gray-400 mt-2">
+            <Link href="/sifremi-unuttum" className="hover:text-gray-600">Şifremi unuttum</Link>
+          </p>
         </div>
       </div>
     </main>

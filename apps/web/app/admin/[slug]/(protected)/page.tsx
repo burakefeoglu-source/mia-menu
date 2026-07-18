@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import SectionsList from '@/components/SectionsList';
+import OnboardingChecklist from '@/components/OnboardingChecklist';
 import { addSection } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -27,8 +28,23 @@ export default async function SectionsPage({ params }: { params: { slug: string 
 
   const boundAddSection = addSection.bind(null, tenant!.id, params.slug);
 
+  // Onboarding kontrolleri
+  const hasProducts = (products?.length ?? 0) > 0;
+  const hasProductWithImage = products?.some(p => p.image_url) ?? false;
+  const hasCoverImage = !!tenant?.cover_image_url;
+  const hasSocialMedia = !!(tenant?.instagram_url || tenant?.whatsapp_number);
+
+  const checklistItems = [
+    { key: 'products', label: 'En az 1 ürün ekleyin', done: hasProducts, href: '', action: 'Ekle' },
+    { key: 'cover', label: 'Kapak fotoğrafı yükleyin', done: hasCoverImage, href: '/settings', action: 'Yükle' },
+    { key: 'image', label: 'En az 1 ürüne fotoğraf ekleyin', done: hasProductWithImage, href: '', action: 'Ekle' },
+    { key: 'social', label: 'Sosyal medya bağlantısı ekleyin', done: hasSocialMedia, href: '/settings', action: 'Ekle' },
+    { key: 'qr', label: 'QR kodunuzu indirin', done: false, href: '/qr', action: 'İndir' },
+  ];
+
   return (
     <div>
+      <OnboardingChecklist items={checklistItems} slug={params.slug} />
       <h2 className="text-base font-medium mb-4">Bölümler &amp; ürünler</h2>
       <SectionsList
         tenantId={tenant!.id}

@@ -8,6 +8,8 @@ import {
   deleteSection,
   reorderProducts,
   reorderSections,
+  toggleProductActive,
+  toggleSectionActive,
   updateProduct,
   updateProductFlags,
   updateSectionName,
@@ -79,7 +81,7 @@ export default function SectionsList({
             onDragStart={() => handleSectionDragStart(sectionIndex)}
             onDragOver={(e) => handleSectionDragOver(e, sectionIndex)}
             onDrop={handleSectionDrop}
-            className="border border-gray-200 rounded-md overflow-hidden"
+            className={`border rounded-md overflow-hidden transition-opacity ${!s.is_active ? 'opacity-50 border-dashed border-gray-300' : 'border-gray-200'}`}
           >
             <div className="w-full flex justify-between items-center px-3 py-2.5">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -114,6 +116,13 @@ export default function SectionsList({
               </div>
               {editingSection !== s.id && (
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => toggleSectionActive(s.id, slug, !s.is_active)}
+                    className={`text-xs px-1.5 py-0.5 rounded ${s.is_active ? 'text-gray-400' : 'text-amber-600 bg-amber-50'}`}
+                    title={s.is_active ? 'Pasif yap' : 'Aktif yap'}
+                  >
+                    {s.is_active ? '●' : '○'}
+                  </button>
                   <button onClick={() => setEditingSection(s.id)} className="text-xs text-gray-400">Düzenle</button>
                   <button
                     onClick={() => {
@@ -240,9 +249,16 @@ function DraggableProductList({
                 ))}
               </span>
             </div>
-            <span className="flex items-center gap-3 text-xs text-gray-500 flex-shrink-0">
+            <span className="flex items-center gap-2 text-xs text-gray-500 flex-shrink-0">
               {p.calories ? `${p.calories} kcal` : ''}
               <span className="font-medium text-gray-900">{p.price} ₺</span>
+              <button
+                onClick={() => toggleProductActive(p.id, slug, !p.is_active)}
+                className={`px-1.5 py-0.5 rounded text-xs ${p.is_active ? 'text-gray-300' : 'text-amber-600 bg-amber-50 font-medium'}`}
+                title={p.is_active ? 'Pasif yap' : 'Aktif yap'}
+              >
+                {p.is_active ? '●' : '○ Pasif'}
+              </button>
               <button onClick={() => setEditingProduct(p.id)} className="text-gray-400">Düzenle</button>
               <button
                 onClick={() => {

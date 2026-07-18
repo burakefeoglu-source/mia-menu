@@ -665,3 +665,19 @@ export async function updateProductFlags(
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
+
+// --- Bölüm / ürün aktif-pasif ---
+
+export async function toggleSectionActive(sectionId: string, slug: string, active: boolean) {
+  const supabase = createClient();
+  await supabase.from('menu_sections').update({ is_active: active }).eq('id', sectionId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function toggleProductActive(productId: string, slug: string, active: boolean) {
+  const supabase = createClient();
+  await supabase.from('products').update({ is_active: active }).eq('id', productId);
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/menu/${slug}`);
+}
