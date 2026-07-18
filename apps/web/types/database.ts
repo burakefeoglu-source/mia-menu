@@ -4,7 +4,6 @@ export type Tenant = {
   name: string;
   phone: string | null;
   address: string | null;
-  logo_url: string | null;
   cover_image_url: string | null;
   logo_url: string | null;
   default_locale: string;
