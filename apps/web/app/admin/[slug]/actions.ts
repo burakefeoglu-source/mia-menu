@@ -700,3 +700,96 @@ export async function toggleProductActive(productId: string, slug: string, activ
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
 }
+
+// --- Etkin diller ---
+export async function updateEnabledLocales(tenantId: string, slug: string, locales: string[]) {
+  const supabase = getDb();
+  await supabase.from('tenants').update({ enabled_locales: locales }).eq('id', tenantId);
+  revalidatePath(`/admin/${slug}/language`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+// --- Otomatik çeviri (Claude Haiku) ---
+export async function autoTranslateMenu(tenantId: string, slug: string, targetLocale: string) {
+  const supabase = getDb();
+
+  const [{ data: sections }, { data: products }] = await Promise.all([
+    supabase.from('menu_sections').select('id, name').eq('tenant_id', tenantId).order('sort_order'),
+    supabase.from('products').select('id, name, description').eq('tenant_id', tenantId).order('sort_order'),
+  ]);
+
+  const payload = {
+    sections: (sections ?? []).map(s => ({ id: s.id, name: s.name })),
+    products: (products ?? []).map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description || null,
+    })),
+  };
+
+  const { getLang } = await import('@/lib/languages');
+  const langName = getLang(targetLocale)?.name ?? targetLocale;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY!,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: `Translate the following restaurant menu content from Turkish to ${langName}. 
+Return ONLY valid JSON in the exact same structure. Keep IDs unchanged. 
+For null descriptions keep them null. Be natural and appetizing for food menus.
+
+${JSON.stringify(payload)}`,
+      }],
+      system: 'You are a professional restaurant menu translator. Return only valid JSON, no markdown, no explanation.',
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    return { error: `API hatası: ${err}` };
+  }
+
+  const data = await response.json();
+  const text = data.content?.[0]?.text ?? '';
+
+  let translated: typeof payload;
+  try {
+    const clean = text.replace(/```json|```/g, '').trim();
+    translated = JSON.parse(clean);
+  } catch {
+    return { error: 'Çeviri ayrıştırılamadı' };
+  }
+
+  // Çevirileri translations tablosuna kaydet
+  const rows: { tenant_id: string; entity_type: string; entity_id: string; locale: string; field: string; value: string }[] = [];
+
+  for (const s of translated.sections ?? []) {
+    if (s.name) rows.push({ tenant_id: tenantId, entity_type: 'section', entity_id: s.id, locale: targetLocale, field: 'name', value: s.name });
+  }
+  for (const p of translated.products ?? []) {
+    if (p.name) rows.push({ tenant_id: tenantId, entity_type: 'product', entity_id: p.id, locale: targetLocale, field: 'name', value: p.name });
+    if (p.description) rows.push({ tenant_id: tenantId, entity_type: 'product', entity_id: p.id, locale: targetLocale, field: 'description', value: p.description });
+  }
+
+  // Önce mevcut çevirileri sil, sonra yenilerini ekle
+  await supabase.from('translations')
+    .delete()
+    .eq('tenant_id', tenantId)
+    .eq('locale', targetLocale);
+
+  if (rows.length > 0) {
+    await supabase.from('translations').insert(rows);
+  }
+
+  revalidatePath(`/admin/${slug}/language`);
+  revalidatePath(`/menu/${slug}`);
+  return { success: true, count: rows.length };
+}

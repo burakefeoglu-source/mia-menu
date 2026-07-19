@@ -48,7 +48,15 @@ export default function MenuClient({ tenant, sections, products, announcements, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [lang, setLang] = useState<'tr' | 'en'>('tr');
+  const enabledLocales: string[] = (tenant as { enabled_locales?: string[] }).enabled_locales ?? ['tr'];
+  const [lang, setLang] = useState<string>(() => {
+    // Tarayıcı dilini kontrol et
+    if (typeof window !== 'undefined') {
+      const browserLang = navigator.language.split('-')[0];
+      if (enabledLocales.includes(browserLang)) return browserLang;
+    }
+    return enabledLocales[0] ?? 'tr';
+  });
   const [activeSection, setActiveSection] = useState<string | null>(
     sectionNav === 'grid' ? null : (sections[0]?.id ?? '')
   );
@@ -126,27 +134,47 @@ export default function MenuClient({ tenant, sections, products, announcements, 
   }
 
   /* ─── DİL TOGGLE ─── */
-  const langToggleDark = (
-    <div className="inline-flex rounded-full bg-white/15 p-0.5">
-      <button onClick={() => setLang('tr')} className={`text-xs px-2.5 py-1 rounded-full ${lang === 'tr' ? 'bg-white text-gray-900' : 'text-white/70'}`}>TR</button>
-      <button onClick={() => setLang('en')} className={`text-xs px-2.5 py-1 rounded-full ${lang === 'en' ? 'bg-white text-gray-900' : 'text-white/70'}`}>EN</button>
-    </div>
-  );
+  function LangToggle({ variant }: { variant: 'dark' | 'light' | 'border' }) {
+    if (enabledLocales.length <= 1) return null;
+    const langs = enabledLocales.slice(0, 4); // max 4 dil göster
+    if (variant === 'dark') return (
+      <div className="inline-flex rounded-full bg-white/15 p-0.5 flex-wrap">
+        {langs.map(code => (
+          <button key={code} onClick={() => setLang(code)}
+            className={`text-xs px-2 py-1 rounded-full ${lang === code ? 'bg-white text-gray-900' : 'text-white/70'}`}>
+            {code.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    );
+    if (variant === 'border') return (
+      <div className="border border-gray-200 rounded-full px-2 py-1 flex gap-1.5 items-center flex-wrap">
+        {langs.map((code, i) => (
+          <span key={code} className="flex items-center gap-1.5">
+            {i > 0 && <span className="w-px h-3 bg-gray-200" />}
+            <button onClick={() => setLang(code)}
+              className={`text-xs ${lang === code ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>
+              {code.toUpperCase()}
+            </button>
+          </span>
+        ))}
+      </div>
+    );
+    return (
+      <div className="inline-flex rounded-full bg-white p-0.5 flex-wrap">
+        {langs.map(code => (
+          <button key={code} onClick={() => setLang(code)}
+            className={`text-xs px-2 py-1 rounded-full ${lang === code ? `${theme.accentBg} text-white` : theme.accentText}`}>
+            {code.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
-  const langToggleLight = (
-    <div className="inline-flex rounded-full bg-white p-0.5">
-      <button onClick={() => setLang('tr')} className={`text-xs px-2.5 py-1 rounded-full ${lang === 'tr' ? `${theme.accentBg} text-white` : theme.accentText}`}>TR</button>
-      <button onClick={() => setLang('en')} className={`text-xs px-2.5 py-1 rounded-full ${lang === 'en' ? `${theme.accentBg} text-white` : theme.accentText}`}>EN</button>
-    </div>
-  );
-
-  const langToggleBorder = (
-    <div className="border border-gray-200 rounded-full px-3 py-1 flex gap-2 items-center">
-      <button onClick={() => setLang('tr')} className={`text-xs ${lang === 'tr' ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>TR</button>
-      <span className="w-px h-3 bg-gray-200" />
-      <button onClick={() => setLang('en')} className={`text-xs ${lang === 'en' ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>EN</button>
-    </div>
-  );
+  const langToggleDark = <LangToggle variant="dark" />;
+  const langToggleLight = <LangToggle variant="light" />;
+  const langToggleBorder = <LangToggle variant="border" />;
 
   /* ─── HEADER ─── */
   const header = (() => {
@@ -157,12 +185,12 @@ export default function MenuClient({ tenant, sections, products, announcements, 
           <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-48 object-cover opacity-30" />
         )}
         {/* Logo — kapak fotoğrafı üzerinde tam ortada */}
-        {tenant.logo_light_url && tenant.cover_image_url && (
+        {(tenant.logo_light_url || tenant.logo_url) && tenant.cover_image_url && (
           <div className="absolute inset-0" style={{ top: 0, height: '192px' }}>
             <div className="w-full h-full flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={tenant.logo_light_url}
+                src={tenant.logo_light_url ?? tenant.logo_url ?? ''}
                 alt={`${tenant.name} logo`}
                 className="max-h-20 max-w-[55%] object-contain"
                 style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.7))' }}

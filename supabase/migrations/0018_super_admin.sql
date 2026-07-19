@@ -20,3 +20,7 @@ alter table tenants
 alter table tenants
   add column if not exists logo_light_url text,
   add column if not exists qr_logo_url text;
+
+-- Çoklu dil desteği
+alter table tenants
+  add column if not exists enabled_locales text[] default array['tr'];
