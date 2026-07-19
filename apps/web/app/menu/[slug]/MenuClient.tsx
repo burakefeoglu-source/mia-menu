@@ -98,7 +98,7 @@ export default function MenuClient({ tenant, sections, products, announcements, 
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewDone, setReviewDone] = useState(false);
 
-  const t = labels[lang];
+  const t = (labels as Record<string, typeof labels['tr']>)[lang] ?? labels['tr'];
 
   const enMap = useMemo(() => {
     const map = new Map<string, string>();
