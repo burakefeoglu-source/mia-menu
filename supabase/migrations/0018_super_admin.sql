@@ -15,3 +15,8 @@ alter table tenants
   add column if not exists linkedin_url text,
   add column if not exists twitter_url text,
   add column if not exists youtube_url text;
+
+-- Logo varyantları ve QR ayrı logo
+alter table tenants
+  add column if not exists logo_light_url text,
+  add column if not exists qr_logo_url text;

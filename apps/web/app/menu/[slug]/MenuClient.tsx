@@ -156,15 +156,18 @@ export default function MenuClient({ tenant, sections, products, announcements, 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-48 object-cover opacity-30" />
         )}
-        {(tenant as { logo_url?: string | null }).logo_url && (
-          <div className={`flex justify-center ${tenant.cover_image_url ? 'absolute inset-0 items-center' : 'pt-6 pb-2'}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={(tenant as { logo_url: string }).logo_url}
-              alt={`${tenant.name} logo`}
-              className="max-h-20 max-w-[55%] object-contain"
-              style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.7))' }}
-            />
+        {/* Logo — kapak fotoğrafı üzerinde tam ortada */}
+        {tenant.logo_light_url && tenant.cover_image_url && (
+          <div className="absolute inset-0" style={{ top: 0, height: '192px' }}>
+            <div className="w-full h-full flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={tenant.logo_light_url}
+                alt={`${tenant.name} logo`}
+                className="max-h-20 max-w-[55%] object-contain"
+                style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.7))' }}
+              />
+            </div>
           </div>
         )}
         <div className="absolute top-3 right-3">{langToggleDark}</div>
@@ -240,11 +243,11 @@ export default function MenuClient({ tenant, sections, products, announcements, 
             // eslint-disable-next-line @next/next/no-img-element
             <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-44 object-cover" />
           )}
-          {(tenant as { logo_url?: string | null }).logo_url && tenant.cover_image_url && (
+          {tenant.logo_url && tenant.cover_image_url && (
             <div className="absolute inset-0 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={(tenant as { logo_url: string }).logo_url}
+                src={tenant.logo_url}
                 alt={`${tenant.name} logo`}
                 className="max-h-24 max-w-[60%] object-contain"
                 style={{ filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.55))' }}

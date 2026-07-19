@@ -39,7 +39,8 @@ export default function LinksPageForm({
   tenant, slug, links, linkPageUrl,
   addLinkAction, deleteLinkAction, toggleLinkAction,
 }: Props) {
-  const [logoUrl, setLogoUrl] = useState(tenant.cover_image_url ?? '');
+  const [coverUrl, setCoverUrl] = useState(tenant.cover_image_url ?? '');
+  const [logoUrl, setLogoUrl] = useState(tenant.logo_url ?? '');
 
   const socialInitial = {
     instagram: tenant.instagram_url,
@@ -64,14 +65,24 @@ export default function LinksPageForm({
       </div>
 
       {/* Profil formu */}
-      <form action={async (fd) => { fd.set('cover_image_url', logoUrl); await bound(fd); }}
+      <form action={async (fd) => { fd.set('cover_image_url', coverUrl); fd.set('logo_url', logoUrl); await bound(fd); }}
         className="flex flex-col gap-3 max-w-sm mb-8 pb-6 border-b border-gray-100">
         <p className="text-sm font-medium">Profil</p>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Profil görseli</label>
-          <ImageUploader folder="covers" currentUrl={logoUrl}
-            onUploaded={(url) => setLogoUrl(url)} label="Görsel yükle" />
+          <label className="block text-xs text-gray-500 mb-1">Kapak görseli</label>
+          <ImageUploader folder="covers" currentUrl={coverUrl}
+            onUploaded={(url) => setCoverUrl(url)} label="Görsel yükle" />
+          {coverUrl && (
+            <button type="button" onClick={() => setCoverUrl('')} className="text-xs text-red-500 mt-1">Kaldır</button>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Logo (kapak üzerinde ortada)</label>
+          <p className="text-[11px] text-gray-400 mb-1.5">Kapak görselinin üzerine drop-shadow ile gelir.</p>
+          <ImageUploader folder="logos" currentUrl={logoUrl}
+            onUploaded={(url) => setLogoUrl(url)} label="Logo yükle" />
           {logoUrl && (
             <button type="button" onClick={() => setLogoUrl('')} className="text-xs text-red-500 mt-1">Kaldır</button>
           )}

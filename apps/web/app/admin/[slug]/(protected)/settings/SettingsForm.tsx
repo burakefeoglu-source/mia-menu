@@ -9,6 +9,8 @@ import type { Tenant } from '@/types/database';
 export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: string }) {
   const [coverUrl, setCoverUrl] = useState(tenant.cover_image_url ?? '');
   const [logoUrl, setLogoUrl] = useState(tenant.logo_url ?? '');
+  const [logoLightUrl, setLogoLightUrl] = useState(tenant.logo_light_url ?? '');
+  const [qrLogoUrl, setQrLogoUrl] = useState(tenant.qr_logo_url ?? '');
 
   const bound = updateTenant.bind(null, tenant.id, slug);
 
@@ -27,6 +29,8 @@ export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: s
     <form action={async (fd) => {
       fd.set('cover_image_url', coverUrl);
       fd.set('logo_url', logoUrl);
+      fd.set('logo_light_url', logoLightUrl);
+      fd.set('qr_logo_url', qrLogoUrl);
       await bound(fd);
     }} className="flex flex-col gap-3 max-w-sm">
 
@@ -54,31 +58,31 @@ export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: s
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Kapak fotoğrafı</label>
-        <ImageUploader
-          folder="covers"
-          currentUrl={coverUrl}
-          onUploaded={(url) => setCoverUrl(url)}
-          label="Fotoğraf yükle"
-        />
-        {coverUrl && (
-          <button type="button" onClick={() => setCoverUrl('')}
-            className="text-xs text-red-500 mt-1">Fotoğrafı sil</button>
-        )}
+        <ImageUploader folder="covers" currentUrl={coverUrl}
+          onUploaded={(url) => setCoverUrl(url)} label="Fotoğraf yükle" />
+        {coverUrl && <button type="button" onClick={() => setCoverUrl('')} className="text-xs text-red-500 mt-1">Fotoğrafı sil</button>}
       </div>
 
-      <div>
-        <label className="block text-xs text-gray-500 mb-1">Logo</label>
-        <p className="text-[11px] text-gray-400 mb-1.5">Kapak fotoğrafının üzerinde shadow ile gösterilir.</p>
-        <ImageUploader
-          folder="logos"
-          currentUrl={logoUrl}
-          onUploaded={(url) => setLogoUrl(url)}
-          label="Logo yükle"
-        />
-        {logoUrl && (
-          <button type="button" onClick={() => setLogoUrl('')}
-            className="text-xs text-red-500 mt-1">Logoyu sil</button>
-        )}
+      <div className="border border-gray-100 rounded-xl p-3 flex flex-col gap-3">
+        <p className="text-xs font-medium text-gray-600">Logo</p>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">🌑 Koyu logo <span className="text-gray-400 font-normal">(açık zemin için — Klasik & Minimal layout)</span></label>
+          <ImageUploader folder="logos" currentUrl={logoUrl}
+            onUploaded={(url) => setLogoUrl(url)} label="Yükle" />
+          {logoUrl && <button type="button" onClick={() => setLogoUrl('')} className="text-xs text-red-500 mt-1">Sil</button>}
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">🌕 Açık logo <span className="text-gray-400 font-normal">(koyu zemin için — Koyu Header layout)</span></label>
+          <ImageUploader folder="logos" currentUrl={logoLightUrl}
+            onUploaded={(url) => setLogoLightUrl(url)} label="Yükle" />
+          {logoLightUrl && <button type="button" onClick={() => setLogoLightUrl('')} className="text-xs text-red-500 mt-1">Sil</button>}
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">📱 QR Kod logosu <span className="text-gray-400 font-normal">(karekodun ortasında)</span></label>
+          <ImageUploader folder="logos" currentUrl={qrLogoUrl}
+            onUploaded={(url) => setQrLogoUrl(url)} label="Yükle" />
+          {qrLogoUrl && <button type="button" onClick={() => setQrLogoUrl('')} className="text-xs text-red-500 mt-1">Sil</button>}
+        </div>
       </div>
 
       <div>

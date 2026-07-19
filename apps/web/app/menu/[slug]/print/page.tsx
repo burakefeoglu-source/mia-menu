@@ -121,10 +121,10 @@ export default async function PrintMenuPage({
           ${ps.map((p) => `
             <div style="display:flex; gap:8px; padding:4px 0; border-bottom:.5px solid #eee; break-inside:avoid;">
               ${showImages && p.image_url ? `<img src="${p.image_url}" style="width:${isSmall ? 32 : 44}px; height:${isSmall ? 32 : 44}px; object-fit:cover; border-radius:3px; flex-shrink:0;">` : showImages ? `<div style="width:${isSmall ? 32 : 44}px; height:${isSmall ? 32 : 44}px; background:#e5e7eb; border-radius:3px; flex-shrink:0;"></div>` : ''}
-              <div>
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                  <span style="font-size:${baseFontSize}px; font-weight:600;">${p.name}</span>
-                  ${showPrices ? `<span style="font-size:${baseFontSize}px; font-weight:700; color:${color}; white-space:nowrap;">${p.price} ₺</span>` : ''}
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+                  <span style="font-size:${baseFontSize}px; font-weight:600; flex:1;">${p.name}</span>
+                  ${showPrices ? `<span style="font-size:${baseFontSize}px; font-weight:700; color:${color}; white-space:nowrap; margin-left:auto; flex-shrink:0;">${p.price} ₺</span>` : ''}
                 </div>
                 ${showDescs && p.description ? `<div style="font-size:${baseFontSize - 1.5}px; color:#666; margin-top:1px;">${p.description}</div>` : ''}
               </div>

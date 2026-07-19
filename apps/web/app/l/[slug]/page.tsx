@@ -86,15 +86,29 @@ export default async function LinkPage({ params }: { params: { slug: string } })
 
         {/* Profil */}
         <div className="text-center mb-7">
-          {tenant.cover_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tenant.cover_image_url} alt={tenant.name}
-              className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-white shadow" />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-rose-600 flex items-center justify-center mx-auto mb-3 border-4 border-white shadow">
-              <span className="text-2xl font-bold text-white">{tenant.name[0]}</span>
-            </div>
-          )}
+          <div className="relative mx-auto mb-3" style={{ width: 80, height: 80 }}>
+            {tenant.cover_image_url ? (
+              <div className="relative w-20 h-20 rounded-full overflow-hidden mx-auto">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={tenant.cover_image_url} alt={tenant.name} className="w-full h-full object-cover" />
+                {tenant.logo_url && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={tenant.logo_url} alt="" className="w-12 h-12 object-contain"
+                      style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.5))' }} />
+                  </div>
+                )}
+              </div>
+            ) : tenant.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tenant.logo_url} alt={tenant.name}
+                className="w-20 h-20 rounded-full object-contain bg-white mx-auto shadow" />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-rose-600 flex items-center justify-center mx-auto shadow">
+                <span className="text-2xl font-bold text-white">{tenant.name[0]}</span>
+              </div>
+            )}
+          </div>
           <h1 className="text-lg font-semibold text-gray-900">{tenant.name}</h1>
           {tenant.address && (
             <p className="text-xs text-gray-400 mt-0.5">{tenant.address.split(',').slice(-2).join(',').trim()}</p>

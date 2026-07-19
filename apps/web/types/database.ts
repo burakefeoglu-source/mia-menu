@@ -6,6 +6,8 @@ export type Tenant = {
   address: string | null;
   cover_image_url: string | null;
   logo_url: string | null;
+  logo_light_url: string | null;
+  qr_logo_url: string | null;
   default_locale: string;
   is_active: boolean;
   qr_style: 'square' | 'rounded' | 'dot';
