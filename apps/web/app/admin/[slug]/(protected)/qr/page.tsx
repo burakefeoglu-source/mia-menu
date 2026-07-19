@@ -8,7 +8,7 @@ export default async function QrPage({ params }: { params: { slug: string } }) {
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, qr_style, logo_url')
+    .select('id, qr_style, logo_url, qr_logo_url')
     .eq('slug', params.slug)
     .single();
 
@@ -42,7 +42,7 @@ export default async function QrPage({ params }: { params: { slug: string } }) {
         tenantId={tenant!.id}
         slug={params.slug}
         initialStyle={tenant!.qr_style}
-        initialLogoUrl={tenant!.logo_url ?? ''}
+        initialLogoUrl={(tenant as { qr_logo_url?: string | null }).qr_logo_url ?? tenant!.logo_url ?? ''}
         generalEntry={generalEntry}
         tableEntries={tableEntries}
         hasTables={(tables ?? []).length > 0}
