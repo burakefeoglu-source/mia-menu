@@ -65,7 +65,7 @@ export default async function StatsPage({
   const productMap: Record<string, { name: string; count: number }> = {};
   for (const e of clickEvents ?? []) {
     const id = e.product_id as string;
-    const name = (e.products as { name: string } | null)?.name ?? 'Bilinmiyor';
+    const name = (e.products as unknown as { name: string } | null)?.name ?? 'Bilinmiyor';
     if (!productMap[id]) productMap[id] = { name, count: 0 };
     productMap[id].count++;
   }
