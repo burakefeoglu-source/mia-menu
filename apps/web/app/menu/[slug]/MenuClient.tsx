@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import type { Announcement, MenuSection, Product, Tenant } from '@/types/database';
 import { AllergenIcon } from '@/lib/allergenIcons';
 import { getTheme } from '@/lib/menuThemes';
+import { SUPPORTED_LANGUAGES } from '@/lib/languages';
 import { submitReview } from './actions';
 import SocialLinks from '@/components/SocialLinks';
 
@@ -134,40 +135,43 @@ export default function MenuClient({ tenant, sections, products, announcements, 
   }
 
   /* ─── DİL TOGGLE ─── */
+  const [langOpen, setLangOpen] = useState(false);
+
   function LangToggle({ variant }: { variant: 'dark' | 'light' | 'border' }) {
     if (enabledLocales.length <= 1) return null;
-    const langs = enabledLocales.slice(0, 4); // max 4 dil göster
-    if (variant === 'dark') return (
-      <div className="inline-flex rounded-full bg-white/15 p-0.5 flex-wrap">
-        {langs.map(code => (
-          <button key={code} onClick={() => setLang(code)}
-            className={`text-xs px-2 py-1 rounded-full ${lang === code ? 'bg-white text-gray-900' : 'text-white/70'}`}>
-            {code.toUpperCase()}
-          </button>
-        ))}
-      </div>
-    );
-    if (variant === 'border') return (
-      <div className="border border-gray-200 rounded-full px-2 py-1 flex gap-1.5 items-center flex-wrap">
-        {langs.map((code, i) => (
-          <span key={code} className="flex items-center gap-1.5">
-            {i > 0 && <span className="w-px h-3 bg-gray-200" />}
-            <button onClick={() => setLang(code)}
-              className={`text-xs ${lang === code ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>
-              {code.toUpperCase()}
-            </button>
-          </span>
-        ))}
-      </div>
-    );
+    const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === lang);
+
+    const btn = variant === 'dark'
+      ? `inline-flex items-center gap-1.5 bg-white/15 text-white text-xs px-2.5 py-1.5 rounded-full`
+      : variant === 'light'
+      ? `inline-flex items-center gap-1.5 bg-white text-xs px-2.5 py-1.5 rounded-full ${theme.accentText} font-medium`
+      : `inline-flex items-center gap-1.5 border border-gray-200 text-xs px-2.5 py-1.5 rounded-full text-gray-700`;
+
     return (
-      <div className="inline-flex rounded-full bg-white p-0.5 flex-wrap">
-        {langs.map(code => (
-          <button key={code} onClick={() => setLang(code)}
-            className={`text-xs px-2 py-1 rounded-full ${lang === code ? `${theme.accentBg} text-white` : theme.accentText}`}>
-            {code.toUpperCase()}
-          </button>
-        ))}
+      <div className="relative">
+        <button onClick={() => setLangOpen(o => !o)} className={btn}>
+          <span>{currentLang?.flag ?? '🌐'}</span>
+          <span>{lang.toUpperCase()}</span>
+          <span className="text-[10px] opacity-60">▾</span>
+        </button>
+        {langOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden min-w-[140px] max-h-64 overflow-y-auto">
+              {enabledLocales.map(code => {
+                const l = SUPPORTED_LANGUAGES.find(l => l.code === code);
+                return (
+                  <button key={code} onClick={() => { setLang(code); setLangOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 ${code === lang ? 'font-medium text-rose-600' : 'text-gray-700'}`}>
+                    <span>{l?.flag ?? '🌐'}</span>
+                    <span>{l?.name ?? code}</span>
+                    {code === lang && <span className="ml-auto text-rose-500 text-xs">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     );
   }
