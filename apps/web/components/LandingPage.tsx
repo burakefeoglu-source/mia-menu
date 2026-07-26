@@ -76,6 +76,29 @@ export default function LandingPage({ c }: { c: LandingContent }) {
         </div>
       </section>
 
+
+      {/* KAYAR MARKALAR */}
+      <section className="py-12 border-y border-gray-100 overflow-hidden bg-white">
+        <p className="text-center text-xs text-gray-400 uppercase tracking-widest mb-6">Güvenen işletmeler</p>
+        <div className="relative flex">
+          <div className="flex items-center gap-12 animate-marquee whitespace-nowrap" style={{ animation: 'marquee 30s linear infinite' }}>
+            {['The Churroll','Bubada','Banyan','Smyrna Hotel','ATM Burger','Feline','Lapitsa','Flare','Reset','Basilico Tagliatelle','Hector Louis','Göreme Muhallebicisi','Dürümcü Esnaf','Root All in One','Pechko','Tela House','Kajun'].map(b => (
+              <span key={b} className="text-gray-300 font-semibold text-lg tracking-tight flex-shrink-0">{b}</span>
+            ))}
+            {/* Duplicate for seamless loop */}
+            {['The Churroll','Bubada','Banyan','Smyrna Hotel','ATM Burger','Feline','Lapitsa','Flare','Reset','Basilico Tagliatelle','Hector Louis','Göreme Muhallebicisi','Dürümcü Esnaf','Root All in One','Pechko','Tela House','Kajun'].map(b => (
+              <span key={b+'2'} className="text-gray-300 font-semibold text-lg tracking-tight flex-shrink-0">{b}</span>
+            ))}
+          </div>
+        </div>
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
+      </section>
+
       {/* AVANTAJLAR */}
       <section id="ozellikler" className="bg-gray-50 px-6 py-20">
         <div className="max-w-6xl mx-auto">
