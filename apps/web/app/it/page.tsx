@@ -1,6 +1,6 @@
 import LandingPage from '@/components/LandingPage';
 import { LANDING_CONTENT } from '@/lib/landingContent';
 
-export default function Home() {
-  return <LandingPage c={LANDING_CONTENT.tr} />;
+export default function Page() {
+  return <LandingPage c={LANDING_CONTENT.it} />;
 }
