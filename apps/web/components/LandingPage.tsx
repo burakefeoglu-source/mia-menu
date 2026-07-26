@@ -20,7 +20,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
           <div className="flex items-center justify-between px-5 py-3 rounded-2xl"
             style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="mia.menu" className="h-14 object-contain" />
+            <img src="/logo.svg" alt="mia.menu" style={{ height: "60px", width: "auto", display: "block" }} />
             <div className="hidden md:flex items-center gap-1">
               {([['#ozellikler', c.nav.features], ['#nasil-calisir', c.nav.howItWorks], ['#paketler', c.nav.packages], ['#sss', c.nav.faq]] as [string, string][]).map(([href, label]) => (
                 <a key={href} href={href} className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">{label}</a>
@@ -67,7 +67,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
               <div className="relative bg-gray-900 rounded-[44px] p-3 shadow-2xl" style={{ width: 300 }}>
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-gray-700 rounded-full z-10" />
                 <div className="rounded-[36px] overflow-hidden" style={{ height: 560 }}>
-                  <iframe src="/menu/mia-bistro-coffee" style={{ width: '100%', height: '100%', border: 'none' }} title="Demo menu" />
+                  <iframe src="/menu/mia-bistro-coffee" style={{ width: '133%', height: '133%', border: 'none', transform: 'scale(0.75)', transformOrigin: 'top left' }} title="Demo menu" />
                 </div>
               </div>
               <p className="relative z-20 text-center text-xs text-gray-500 mt-4 font-medium">{c.phoneCaption}</p>
@@ -130,7 +130,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
           <div className="flex justify-center">
             <div className="bg-gray-800 rounded-[44px] p-3 shadow-2xl" style={{ width: 280 }}>
               <div className="rounded-[36px] overflow-hidden" style={{ height: 520 }}>
-                <iframe src="/menu/mia-bistro-coffee" style={{ width: '100%', height: '100%', border: 'none' }} title="Demo" />
+                <iframe src="/menu/mia-bistro-coffee" style={{ width: '133%', height: '133%', border: 'none', transform: 'scale(0.75)', transformOrigin: 'top left' }} title="Demo" />
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
       <footer className="px-6 py-10 border-t border-gray-100">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="mia.menu" className="h-8 object-contain" />
+          <img src="/logo.svg" alt="mia.menu" style={{ height: "36px", width: "auto" }} />
           <div className="flex gap-6 text-xs text-gray-400">
             <a href="#ozellikler" className="hover:text-gray-700">{c.nav.features}</a>
             <a href="#paketler" className="hover:text-gray-700">{c.nav.packages}</a>
