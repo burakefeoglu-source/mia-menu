@@ -49,6 +49,13 @@ export default async function MenuPage({ params }: { params: { slug: string } })
     .eq('locale', 'en')
     .eq('field', 'name');
 
+  const { data: loyaltyPrograms } = await supabase
+    .from('loyalty_programs')
+    .select('id, name, required_stamps, reward_description')
+    .eq('tenant_id', tenant!.id)
+    .eq('is_active', true)
+    .limit(1);
+
   return (
     <MenuClient
       tenant={tenant!}
@@ -56,6 +63,7 @@ export default async function MenuPage({ params }: { params: { slug: string } })
       products={products ?? []}
       announcements={announcements ?? []}
       translations={translations ?? []}
+      loyaltyProgram={loyaltyPrograms?.[0] ?? null}
     />
   );
 }

@@ -28,12 +28,13 @@ const labels = {
   en: { allergenInfo: 'Allergen & calorie info', search: 'Search dishes...', notFound: 'No items found', allergens: 'Allergens', noAllergens: 'No listed allergens', footnote: 'This information is shown in line with the regulation effective July 1, 2026.', favorites: 'Favorites', leaveReview: 'Leave feedback' },
 };
 
-export default function MenuClient({ tenant, sections, products, announcements, translations }: {
+export default function MenuClient({ tenant, sections, products, announcements, translations, loyaltyProgram }: {
   tenant: Tenant;
   sections: MenuSection[];
   products: ProductWithExtras[];
   announcements: Announcement[];
   translations: Translation[];
+  loyaltyProgram: { id: string; name: string; required_stamps: number; reward_description: string } | null;
 }) {
   const layout = (tenant.menu_layout as 'classic' | 'dark' | 'minimal') ?? 'classic';
   const sectionNav = (tenant.section_nav as 'tabs' | 'grid') ?? 'tabs';
@@ -356,6 +357,22 @@ export default function MenuClient({ tenant, sections, products, announcements, 
             ))}
           </div>
         </div>
+      )}
+
+      {/* Sadakat programı kutusu */}
+      {loyaltyProgram && (
+        <a
+          href={`/kart/${tenant.slug}`}
+          className={`mx-4 mt-3 flex items-center gap-3 rounded-xl border px-4 py-3 ${theme.headerBg} border-transparent`}
+        >
+          <span className="text-2xl">🎁</span>
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-semibold ${theme.headerText}`}>{loyaltyProgram.name}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {loyaltyProgram.required_stamps} alımda {loyaltyProgram.reward_description} · Kartını gör →
+            </p>
+          </div>
+        </a>
       )}
 
       {/* Favoriler */}
