@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
+
+
 
 export default function LandingPage() {
   return (
@@ -16,7 +17,8 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Image src="/logo.png" alt="mia.menu" width={100} height={36} className="object-contain" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="mia.menu" className="h-10 object-contain" />
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-600">
             <a href="#ozellikler">Özellikler</a>
             <a href="#nasil-calisir">Nasıl Çalışır</a>
@@ -307,7 +309,8 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="px-6 py-10 border-t border-gray-100">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Image src="/logo.png" alt="mia.menu" width={90} height={32} className="object-contain" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="mia.menu" className="h-8 object-contain" />
           <div className="flex gap-6 text-xs text-gray-400">
             <a href="#ozellikler" className="hover:text-gray-700">Özellikler</a>
             <a href="#paketler" className="hover:text-gray-700">Paketler</a>
