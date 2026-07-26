@@ -16,11 +16,11 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between px-5 py-3 rounded-2xl"
             style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="mia.menu" className="h-10 object-contain" />
+            <img src="/logo.svg" alt="mia.menu" className="h-14 object-contain" />
             <div className="hidden md:flex items-center gap-1">
               {([['#ozellikler', c.nav.features], ['#nasil-calisir', c.nav.howItWorks], ['#paketler', c.nav.packages], ['#sss', c.nav.faq]] as [string, string][]).map(([href, label]) => (
                 <a key={href} href={href} className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">{label}</a>
@@ -78,7 +78,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* AVANTAJLAR */}
       <section id="ozellikler" className="bg-gray-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Avantajlar</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-12">{c.advantages.title}</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -95,7 +95,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* NASIL ÇALIŞIR */}
       <section id="nasil-calisir" className="px-6 py-20">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Süreç</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-16">{c.howItWorks.title}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -139,7 +139,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* FAYDALAR */}
       <section className="px-6 py-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Sonuçlar</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-12">{c.benefits.title}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,7 +155,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* KULLANIM ALANLARI */}
       <section id="kullanim" className="bg-gray-50 px-6 py-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Kullanım</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-12">{c.useCases.title}</h2>
           <div className="flex flex-wrap justify-center gap-3">
@@ -171,7 +171,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* PAKETLER */}
       <section id="paketler" className="px-6 py-20">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Paketler</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-4">{c.packages.title}</h2>
           <p className="text-center text-gray-500 text-sm mb-12">{c.packages.subtitle}</p>
@@ -202,7 +202,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* SSS */}
       <section id="sss" className="bg-gray-50 px-6 py-20">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto"><div className="max-w-2xl mx-auto w-full">
           <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">SSS</p>
           <h2 className="font-anton text-4xl text-center text-gray-900 mb-12">{c.faq.title}</h2>
           <div className="flex flex-col gap-4">
@@ -213,7 +213,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
               </div>
             ))}
           </div>
-        </div>
+        </div></div>
       </section>
 
       {/* CTA */}
@@ -230,7 +230,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
 
       {/* FOOTER */}
       <footer className="px-6 py-10 border-t border-gray-100">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="mia.menu" className="h-8 object-contain" />
           <div className="flex gap-6 text-xs text-gray-400">
