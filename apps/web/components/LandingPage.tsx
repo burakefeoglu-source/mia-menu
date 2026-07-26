@@ -47,9 +47,11 @@ export default function LandingPage({ c }: { c: LandingContent }) {
       <section className="px-6 pt-36 pb-20 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-full mb-6 font-medium">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>{c.badge}
-            </div>
+{c.lang === 'tr' && (
+              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-full mb-6 font-medium">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>{c.badge}
+              </div>
+            )}
             <h1 className="font-anton text-5xl md:text-6xl leading-tight mb-6 text-gray-900">
               {c.heroTitle[0]}<br /><span className="text-brand">{c.heroTitle[1]}</span><br />{c.heroTitle[2]}
             </h1>
@@ -186,6 +188,60 @@ export default function LandingPage({ c }: { c: LandingContent }) {
               <div key={label} className="bg-white border border-gray-200 rounded-2xl px-6 py-4 flex items-center gap-3 shadow-sm">
                 <span className="text-2xl">{icon}</span>
                 <span className="font-medium text-gray-700 text-sm">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* TÜM ÖZELLİKLER */}
+      <section className="px-6 py-20 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-brand text-sm font-semibold uppercase tracking-widest text-center mb-3">Özellikler</p>
+          <h2 className="font-anton text-4xl text-center text-gray-900 mb-4">HER İHTİYACINIZ KARŞILANIR</h2>
+          <p className="text-center text-gray-500 text-sm mb-14 max-w-xl mx-auto">Menü yönetiminden pazarlamaya, tasarımdan analitiğe — ihtiyaç duyacağınız her şey tek platformda.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                cat: 'Menü Yönetimi', icon: '🍽️',
+                items: ['Sınırsız ürün ve bölüm', 'Ürün fotoğrafı yükleme (WebP)', 'Açıklama ve kalori bilgisi', 'Toplu fiyat güncelleme (% veya +₺)', 'Excel / CSV içeri aktar', 'Sürükle-bırak sıralama', 'Ürün ve bölüm aktif/pasif toggle', 'Günün menüsü yönetimi'],
+              },
+              {
+                cat: 'Tasarım & QR', icon: '🎨',
+                items: ['3 farklı menü düzeni', '8 renk teması', 'Logo ve kapak fotoğrafı', 'QR kod renk ve logo özelleştirme', '6 baskı şablonu (A3 / A4 / A5)', 'Bölüm fotoğraflı ızgara görünüm', 'Link sayfası (/l/slug)', 'Web entegrasyonu (iframe & widget)'],
+              },
+              {
+                cat: 'Müşteri Deneyimi', icon: '😊',
+                items: ['50+ dil desteği (Claude API çevirisi)', '14 resmi alerjen + özel alerjen', 'Emoji ürün etiket sistemi', 'Metin ve poster duyurular (popup)', 'Kampanya & indirim duyuruları', 'Ürün arama', 'Favori ürünler', 'Sosyal medya ikonları'],
+              },
+              {
+                cat: 'Pazarlama', icon: '📈',
+                items: ['Sadakat kartı sistemi (damga)', 'Google yorum yönlendirme', 'WhatsApp entegrasyonu', 'Instagram, TikTok, Facebook bağlantısı', 'Çalışma saati gösterimi', 'Ürün detay modal', 'Görüş & yorum toplama', 'Haftalık WhatsApp raporu'],
+              },
+              {
+                cat: 'Analitik', icon: '📊',
+                items: ['Menü görüntülenme istatistikleri', 'Ürün tıklama analitiği', 'Günlük / 7 / 30 / 90 gün grafik', 'En çok görüntülenen ürünler', 'Görüş istatistikleri', 'WhatsApp bildirim (görüş gelince)', 'Otomatik analitik takibi', 'Ziyaretçi bazlı raporlama'],
+              },
+              {
+                cat: 'Teknik & Altyapı', icon: '⚙️',
+                items: ['Canlı önizleme (anlık yansıma)', 'Vercel Pro hosting', 'Supabase altyapısı', 'Otomatik SSL sertifikası', 'Global CDN hızı', 'Mobil öncelikli tasarım', 'Türkiye gıda mevzuatı uyumu', 'Service worker desteği'],
+              },
+            ].map(({ cat, icon, items }) => (
+              <div key={cat} className="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-xl flex-shrink-0">{icon}</div>
+                  <h3 className="font-semibold text-gray-900">{cat}</h3>
+                </div>
+                <ul className="flex flex-col gap-2">
+                  {items.map(item => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-500">
+                      <span className="text-brand mt-0.5 flex-shrink-0" style={{ color: '#E11D48' }}>✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
