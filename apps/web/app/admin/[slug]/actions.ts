@@ -828,50 +828,55 @@ export async function addStamp(
   customerPhone: string,
   customerName: string
 ): Promise<{ stamps: number; completed: boolean; reward: string; requiredStamps: number } | { error: string }> {
-  const supabase = getDb();
+  try {
+    const supabase = getDb();
 
-  const { data: program } = await supabase
-    .from('loyalty_programs')
-    .select('required_stamps, reward_description')
-    .eq('id', programId)
-    .single();
-
-  if (!program) return { error: 'Program bulunamadı' };
-
-  // Kart bul veya oluştur
-  let { data: card } = await supabase
-    .from('loyalty_cards')
-    .select('id, stamps, completed_count')
-    .eq('program_id', programId)
-    .eq('customer_phone', customerPhone)
-    .maybeSingle();
-
-  if (!card) {
-    const { data: newCard } = await supabase
-      .from('loyalty_cards')
-      .insert({ tenant_id: tenantId, program_id: programId, customer_phone: customerPhone, customer_name: customerName || null })
-      .select('id, stamps, completed_count')
+    const { data: program, error: progErr } = await supabase
+      .from('loyalty_programs')
+      .select('required_stamps, reward_description')
+      .eq('id', programId)
       .single();
-    card = newCard;
+
+    if (progErr || !program) return { error: `Program bulunamadı: ${progErr?.message}` };
+
+    // Kart bul veya oluştur
+    let { data: card } = await supabase
+      .from('loyalty_cards')
+      .select('id, stamps, completed_count')
+      .eq('program_id', programId)
+      .eq('customer_phone', customerPhone)
+      .maybeSingle();
+
+    if (!card) {
+      const { data: newCard, error: cardErr } = await supabase
+        .from('loyalty_cards')
+        .insert({ tenant_id: tenantId, program_id: programId, customer_phone: customerPhone, customer_name: customerName || null })
+        .select('id, stamps, completed_count')
+        .single();
+      if (cardErr) return { error: `Kart oluşturulamadı: ${cardErr.message}` };
+      card = newCard;
+    }
+
+    if (!card) return { error: 'Kart bulunamadı' };
+
+    const newStamps = card.stamps + 1;
+    const completed = newStamps >= program.required_stamps;
+
+    await supabase.from('loyalty_stamps').insert({ card_id: card.id });
+    await supabase.from('loyalty_cards').update({
+      stamps: completed ? 0 : newStamps,
+      completed_count: completed ? card.completed_count + 1 : card.completed_count,
+      customer_name: customerName || undefined,
+    }).eq('id', card.id);
+
+    revalidatePath(`/admin/${slug}/loyalty`);
+    return {
+      stamps: completed ? 0 : newStamps,
+      completed,
+      reward: program.reward_description,
+      requiredStamps: program.required_stamps,
+    };
+  } catch (e) {
+    return { error: `Beklenmeyen hata: ${(e as Error).message}` };
   }
-
-  if (!card) return { error: 'Kart oluşturulamadı' };
-
-  const newStamps = card.stamps + 1;
-  const completed = newStamps >= program.required_stamps;
-
-  await supabase.from('loyalty_stamps').insert({ card_id: card.id });
-  await supabase.from('loyalty_cards').update({
-    stamps: completed ? 0 : newStamps,
-    completed_count: completed ? card.completed_count + 1 : card.completed_count,
-    customer_name: customerName || undefined,
-  }).eq('id', card.id);
-
-  revalidatePath(`/admin/${slug}/loyalty`);
-  return {
-    stamps: completed ? 0 : newStamps,
-    completed,
-    reward: program.reward_description,
-    requiredStamps: program.required_stamps,
-  };
 }
