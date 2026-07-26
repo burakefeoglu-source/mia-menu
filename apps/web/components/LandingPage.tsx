@@ -20,7 +20,7 @@ export default function LandingPage({ c }: { c: LandingContent }) {
           <div className="flex items-center justify-between px-5 py-3 rounded-2xl"
             style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="mia.menu" style={{ height: "60px", width: "auto", display: "block" }} />
+            <img src="/logo.svg" alt="mia.menu" style={{ height: "80px", width: "auto", display: "block", marginTop: "-10px", marginBottom: "-10px" }} />
             <div className="hidden md:flex items-center gap-1">
               {([['#ozellikler', c.nav.features], ['#nasil-calisir', c.nav.howItWorks], ['#paketler', c.nav.packages], ['#sss', c.nav.faq]] as [string, string][]).map(([href, label]) => (
                 <a key={href} href={href} className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">{label}</a>
