@@ -36,7 +36,7 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="px-6 py-20 max-w-6xl mx-auto">
+      <section className="px-6 pt-36 pb-20 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-full mb-6 font-medium">
