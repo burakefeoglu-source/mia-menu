@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { translateToEnglish } from '@/lib/translate';
+import { requireTenantAccess } from '@/lib/authGuard';
 
 // RLS bypass için service role client
 function getDb() {
@@ -792,4 +793,85 @@ ${JSON.stringify(payload)}`,
   revalidatePath(`/admin/${slug}/language`);
   revalidatePath(`/menu/${slug}`);
   return { success: true, count: rows.length };
+}
+
+// --- Sadakat programı ---
+
+export async function createLoyaltyProgram(tenantId: string, slug: string, formData: FormData) {
+  const supabase = getDb();
+  await supabase.from('loyalty_programs').insert({
+    tenant_id: tenantId,
+    name: formData.get('name') as string,
+    description: (formData.get('description') as string) || null,
+    required_stamps: parseInt(formData.get('required_stamps') as string) || 10,
+    reward_description: formData.get('reward_description') as string,
+  });
+  revalidatePath(`/admin/${slug}/loyalty`);
+}
+
+export async function toggleLoyaltyProgram(programId: string, slug: string, active: boolean) {
+  const supabase = getDb();
+  await supabase.from('loyalty_programs').update({ is_active: active }).eq('id', programId);
+  revalidatePath(`/admin/${slug}/loyalty`);
+}
+
+export async function deleteLoyaltyProgram(programId: string, slug: string) {
+  const supabase = getDb();
+  await supabase.from('loyalty_programs').delete().eq('id', programId);
+  revalidatePath(`/admin/${slug}/loyalty`);
+}
+
+export async function addStamp(
+  tenantId: string,
+  slug: string,
+  programId: string,
+  customerPhone: string,
+  customerName: string
+): Promise<{ stamps: number; completed: boolean; reward: string; requiredStamps: number } | { error: string }> {
+  const supabase = getDb();
+
+  const { data: program } = await supabase
+    .from('loyalty_programs')
+    .select('required_stamps, reward_description')
+    .eq('id', programId)
+    .single();
+
+  if (!program) return { error: 'Program bulunamadı' };
+
+  // Kart bul veya oluştur
+  let { data: card } = await supabase
+    .from('loyalty_cards')
+    .select('id, stamps, completed_count')
+    .eq('program_id', programId)
+    .eq('customer_phone', customerPhone)
+    .maybeSingle();
+
+  if (!card) {
+    const { data: newCard } = await supabase
+      .from('loyalty_cards')
+      .insert({ tenant_id: tenantId, program_id: programId, customer_phone: customerPhone, customer_name: customerName || null })
+      .select('id, stamps, completed_count')
+      .single();
+    card = newCard;
+  }
+
+  if (!card) return { error: 'Kart oluşturulamadı' };
+
+  const newStamps = card.stamps + 1;
+  const completed = newStamps >= program.required_stamps;
+
+  await supabase.from('loyalty_stamps').insert({ card_id: card.id });
+  await supabase.from('loyalty_cards').update({
+    stamps: completed ? 0 : newStamps,
+    completed_count: completed ? card.completed_count + 1 : card.completed_count,
+    customer_name: customerName || undefined,
+  }).eq('id', card.id);
+
+  revalidatePath(`/admin/${slug}/loyalty`);
+  return {
+    stamps: completed ? 0 : newStamps,
+    completed,
+    reward: program.reward_description,
+    requiredStamps: program.required_stamps,
+  };
 }

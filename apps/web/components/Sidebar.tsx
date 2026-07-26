@@ -38,6 +38,7 @@ const groups = [
     title: '4. Görüş & yorumlar',
     items: [
       { key: 'reviews', label: 'Görüş & yorumlar', href: '/reviews' },
+      { key: 'loyalty', label: 'Sadakat programı', href: '/loyalty' },
       { key: 'stats', label: 'İstatistik', href: '/stats' },
     ],
     soon: [],
