@@ -23,32 +23,9 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  // Giriş yapılmamışsa /giris'e yönlendir
   if (pathname.startsWith('/admin') && !user) {
     return NextResponse.redirect(new URL('/giris', request.url));
-  }
-
-  if (pathname.startsWith('/admin/') && user) {
-    const parts = pathname.split('/');
-    const slug = parts[2];
-
-    if (slug && slug !== 'undefined') {
-      const isSuperAdmin = user.email === 'burak.efeoglu@gmail.com';
-
-      if (!isSuperAdmin) {
-        const { data: tenant } = await supabase
-          .from('tenants').select('id').eq('slug', slug).single();
-
-        if (tenant) {
-          const { data: staff } = await supabase
-            .from('staff_users').select('id')
-            .eq('user_id', user.id).eq('tenant_id', tenant.id).maybeSingle();
-
-          if (!staff) {
-            return NextResponse.redirect(new URL('/giris', request.url));
-          }
-        }
-      }
-    }
   }
 
   return response;
