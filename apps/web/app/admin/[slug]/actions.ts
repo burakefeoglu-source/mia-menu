@@ -556,7 +556,7 @@ export async function updateMenuLayout(
 export async function updateSectionNav(
   tenantId: string,
   slug: string,
-  nav: 'tabs' | 'grid'
+  nav: 'tabs' | 'grid' | 'list'
 ) {
   const supabase = getDb();
   await supabase.from('tenants').update({ section_nav: nav }).eq('id', tenantId);
