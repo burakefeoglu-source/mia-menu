@@ -468,17 +468,16 @@ export default function MenuClient({ tenant, sections, products, announcements, 
                 const cover = sectionImg || productImg;
                 return (
                   <button key={s.id} onClick={() => setActiveSection(s.id)}
-                    className="relative flex items-center justify-between rounded-xl overflow-hidden text-left h-16"
-                    style={{ background: cover ? 'transparent' : theme.headerBg.replace('bg-', '') }}>
+                    className={`relative flex items-center justify-between rounded-xl overflow-hidden text-left h-16 ${!cover ? theme.headerBg : ''}`}>
                     {cover && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={cover} alt={s.name} className="absolute inset-0 w-full h-full object-cover" />
                     )}
-                    <div className={`absolute inset-0 ${cover ? 'bg-black/50' : ''}`} />
-                    <span className={`relative z-10 px-4 font-bold text-sm tracking-wide ${cover ? 'text-white' : theme.headerText}`}>
-                      {nameFor('section', s.id, s.name).toUpperCase()}
+                    <div className={`absolute inset-0 ${cover ? 'bg-black/55' : ''}`} />
+                    <span className={`relative z-10 px-4 font-bold text-sm tracking-widest uppercase ${cover ? 'text-white' : theme.headerText}`}>
+                      {nameFor('section', s.id, s.name)}
                     </span>
-                    <span className={`relative z-10 px-4 ${cover ? 'text-white/70' : 'text-gray-400'} text-lg`}>›</span>
+                    <span className={`relative z-10 px-4 text-xl ${cover ? 'text-white/60' : 'text-gray-300'}`}>›</span>
                   </button>
                 );
               })}

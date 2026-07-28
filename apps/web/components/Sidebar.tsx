@@ -16,7 +16,7 @@ const groups = [
       { key: 'favorites', label: 'Favori listesi', href: '/favorites' },
       { key: 'import', label: 'İçeri aktar', href: '/import' },
     ],
-    soon: ['Ürüne ek seçenekler', 'Menü setleri'],
+    soon: ['Menü setleri'],
   },
   {
     title: '2. Tasarım',
