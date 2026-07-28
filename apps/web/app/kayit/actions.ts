@@ -27,7 +27,9 @@ export async function registerRestaurant(
   const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
   const passwordConfirm = formData.get('password_confirm') as string;
-  const phone = (formData.get('phone') as string)?.trim();
+  const phoneCode = (formData.get('phone_code') as string) || '+90';
+  const phoneRaw = (formData.get('phone') as string)?.trim();
+  const phone = phoneRaw ? `${phoneCode}${phoneRaw.replace(/^0/, '')}` : '';
 
   const fieldErrors: Record<string, string> = {};
   if (!businessName) fieldErrors.business_name = 'İşletme adı zorunlu';

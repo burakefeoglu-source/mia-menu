@@ -8,6 +8,43 @@ import { SUPPORTED_LANGUAGES } from '@/lib/languages';
 import { submitReview } from './actions';
 import SocialLinks from '@/components/SocialLinks';
 
+function ProductOptions({ productId, basePrice }: { productId: string; basePrice: number }) {
+  const [groups, setGroups] = useState<{ id: string; name: string; is_required: boolean; items: { id: string; name: string; price: number; is_default: boolean }[] }[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/product-options?productId=${productId}`)
+      .then(r => r.json())
+      .then(data => { setGroups(data); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  }, [productId]);
+
+  if (!loaded || groups.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3 my-3">
+      {groups.map(g => (
+        <div key={g.id}>
+          <p className="text-xs font-medium text-gray-700 mb-1.5">
+            {g.name} {g.is_required && <span className="text-red-500">*</span>}
+          </p>
+          <div className="flex flex-col gap-1">
+            {g.items.map(item => (
+              <label key={item.id} className="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:border-gray-300">
+                <div className="flex items-center gap-2">
+                  <input type="radio" name={`option-${g.id}`} defaultChecked={item.is_default} className="accent-rose-600" />
+                  <span className="text-sm">{item.name}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">{item.price} ₺</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type ProductWithExtras = Product & {
   product_allergens?: { allergens: { code: string | null; name_tr: string; name_en: string } }[];
   product_tags?: { tags: { name: string } }[];
@@ -37,7 +74,7 @@ export default function MenuClient({ tenant, sections, products, announcements, 
   loyaltyProgram: { id: string; name: string; required_stamps: number; reward_description: string } | null;
 }) {
   const layout = (tenant.menu_layout as 'classic' | 'dark' | 'minimal') ?? 'classic';
-  const sectionNav = (tenant.section_nav as 'tabs' | 'grid') ?? 'tabs';
+  const sectionNav = (tenant.section_nav as 'tabs' | 'grid' | 'list') ?? 'tabs';
   const theme = getTheme(tenant.theme_color);
 
   // Menü görüntülenme tracking
@@ -60,7 +97,7 @@ export default function MenuClient({ tenant, sections, products, announcements, 
     return enabledLocales[0] ?? 'tr';
   });
   const [activeSection, setActiveSection] = useState<string | null>(
-    sectionNav === 'grid' ? null : (sections[0]?.id ?? '')
+    sectionNav === 'grid' || sectionNav === 'list' ? null : (sections[0]?.id ?? '')
   );
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ProductWithExtras | null>(null);
@@ -416,34 +453,61 @@ export default function MenuClient({ tenant, sections, products, announcements, 
         )}
 
         {/* Bölüm navigasyonu — grid */}
-        {sectionNav === 'grid' && activeSection === null && (
-          <div className="grid grid-cols-2 gap-3">
-            {sections.map((s) => {
-              const sectionImg = (s as { image_url?: string | null }).image_url;
-              const productImg = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
-              const cover = sectionImg || productImg;
-              return (
-                <button key={s.id} onClick={() => setActiveSection(s.id)}
-                  className="border border-gray-200 rounded-xl overflow-hidden text-left">
-                  {cover
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={cover} alt={s.name} className="w-full h-28 object-cover" />
-                    : <div className={`w-full h-28 flex items-center justify-center ${theme.headerBg}`}>
-                        <span className="text-2xl opacity-30">🍽️</span>
-                      </div>
-                  }
-                  <div className="p-2.5">
-                    <p className="text-sm font-semibold text-gray-900">{nameFor('section', s.id, s.name)}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{products.filter((p) => p.section_id === s.id).length} ürün</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        {/* Grid navigasyon — bölüm seçimi */}
+        {(sectionNav === 'grid' || sectionNav === 'list') && activeSection === null && (
+          sectionNav === 'list' ? (
+            /* Liste görünümü */
+            <div className="flex flex-col gap-1 px-4 py-3">
+              {sections.map((s) => {
+                const sectionImg = (s as { image_url?: string | null }).image_url;
+                const productImg = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+                const cover = sectionImg || productImg;
+                return (
+                  <button key={s.id} onClick={() => setActiveSection(s.id)}
+                    className="relative flex items-center justify-between rounded-xl overflow-hidden text-left h-16"
+                    style={{ background: cover ? 'transparent' : theme.headerBg.replace('bg-', '') }}>
+                    {cover && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover} alt={s.name} className="absolute inset-0 w-full h-full object-cover" />
+                    )}
+                    <div className={`absolute inset-0 ${cover ? 'bg-black/50' : ''}`} />
+                    <span className={`relative z-10 px-4 font-bold text-sm tracking-wide ${cover ? 'text-white' : theme.headerText}`}>
+                      {nameFor('section', s.id, s.name).toUpperCase()}
+                    </span>
+                    <span className={`relative z-10 px-4 ${cover ? 'text-white/70' : 'text-gray-400'} text-lg`}>›</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Grid görünümü */
+            <div className="grid grid-cols-2 gap-3">
+              {sections.map((s) => {
+                const sectionImg = (s as { image_url?: string | null }).image_url;
+                const productImg = products.find((p) => p.section_id === s.id && p.image_url)?.image_url;
+                const cover = sectionImg || productImg;
+                return (
+                  <button key={s.id} onClick={() => setActiveSection(s.id)}
+                    className="border border-gray-200 rounded-xl overflow-hidden text-left">
+                    {cover
+                      ? <img src={cover} alt={s.name} className="w-full h-28 object-cover" />  // eslint-disable-line @next/next/no-img-element
+                      : <div className={`w-full h-28 flex items-center justify-center ${theme.headerBg}`}>
+                          <span className="text-2xl opacity-30">🍽️</span>
+                        </div>
+                    }
+                    <div className="p-2.5">
+                      <p className="text-sm font-semibold text-gray-900">{nameFor('section', s.id, s.name)}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{products.filter((p) => p.section_id === s.id).length} ürün</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )
         )}
 
         {/* Geri butonu (ızgara modunda bölüm seçildiyse) */}
-        {sectionNav === 'grid' && activeSection !== null && (
+        {(sectionNav === 'grid' || sectionNav === 'list') && activeSection !== null && (
           <button onClick={() => setActiveSection(null)}
             className="flex items-center gap-1.5 text-sm text-gray-500 mb-3 -ml-1">
             ← {t.favorites === 'Favoriler' ? 'Bölümler' : 'Sections'}
@@ -600,6 +664,10 @@ export default function MenuClient({ tenant, sections, products, announcements, 
           </div>
         )}
         {selected.description && <p className="text-sm text-gray-500 mt-1.5 mb-3">{selected.description}</p>}
+
+        {/* Ürün seçenekleri */}
+        <ProductOptions productId={selected.id} basePrice={selected.price} />
+
         <div className="flex gap-4 mb-3 text-sm">
           <span className="font-medium">{selected.price} ₺</span>
           {selected.calories != null && <span className="text-gray-500">{selected.calories} kcal</span>}

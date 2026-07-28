@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { updateSectionNav } from '@/app/admin/[slug]/actions';
 import { broadcastPreviewRefresh } from '@/lib/previewChannel';
 
-type Nav = 'tabs' | 'grid';
+type Nav = 'tabs' | 'grid' | 'list';
 
 const OPTIONS: { value: Nav; label: string; desc: string; preview: React.ReactNode }[] = [
   {
@@ -17,7 +17,6 @@ const OPTIONS: { value: Nav; label: string; desc: string; preview: React.ReactNo
           <div style={{ background: '#c2185b', color: '#fff', fontSize: 8, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap' }}>Kahvaltı</div>
           <div style={{ background: '#f5f5f5', color: '#888', fontSize: 8, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap' }}>Başlangıç</div>
           <div style={{ background: '#f5f5f5', color: '#888', fontSize: 8, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap' }}>Ana</div>
-          <div style={{ background: '#f5f5f5', color: '#888', fontSize: 8, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap' }}>Tatlı</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '0.5px solid #eee', paddingBottom: 2 }}>
@@ -35,20 +34,37 @@ const OPTIONS: { value: Nav; label: string; desc: string; preview: React.ReactNo
   {
     value: 'grid',
     label: 'Izgara',
-    desc: '2\'li kart ızgarası, önce bölüm seç',
+    desc: "2'li kart ızgarası, önce bölüm seç",
     preview: (
       <div style={{ background: '#fff', padding: '8px', height: 72 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
           {['Kahvaltı', 'Başlangıçlar', 'Ana Yemekler', 'Tatlılar'].map((name, i) => (
-            <div key={i} style={{
-              borderRadius: 6,
-              overflow: 'hidden',
-              border: '0.5px solid #eee',
-            }}>
+            <div key={i} style={{ borderRadius: 6, overflow: 'hidden', border: '0.5px solid #eee' }}>
               <div style={{ height: 18, background: i === 0 ? '#c2185b' : '#e5e7eb' }} />
               <div style={{ padding: '3px 5px' }}>
                 <span style={{ fontSize: 7, fontWeight: 600, color: '#111' }}>{name}</span>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    value: 'list',
+    label: 'Liste',
+    desc: 'Tam genişlik banner listesi',
+    preview: (
+      <div style={{ background: '#fff', padding: '8px', height: 72 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {['KAHVALTI', 'BAŞLANGIÇLAR', 'ANA YEMEKLER'].map((name, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              borderRadius: 5, overflow: 'hidden', height: 16,
+              background: i === 0 ? '#c2185b' : '#1f2937', position: 'relative',
+            }}>
+              <span style={{ fontSize: 6, fontWeight: 700, color: '#fff', paddingLeft: 6, letterSpacing: 0.5 }}>{name}</span>
+              <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.7)', paddingRight: 6 }}>›</span>
             </div>
           ))}
         </div>
@@ -66,7 +82,7 @@ export default function SectionNavPicker({
   slug: string;
   initialNav: Nav;
 }) {
-  const [selected, setSelected] = useState<Nav>(initialNav);
+  const [selected, setSelected] = useState<Nav>(initialNav as Nav);
 
   return (
     <div className="flex gap-3 flex-wrap">
@@ -80,7 +96,7 @@ export default function SectionNavPicker({
               updateSectionNav(tenantId, slug, opt.value);
               broadcastPreviewRefresh();
             }}
-            className={`flex flex-col rounded-lg border-2 overflow-hidden transition-colors text-left`}
+            className="flex flex-col rounded-lg border-2 overflow-hidden transition-colors text-left"
             style={{ width: 160, borderColor: active ? '#e11d48' : '#e5e7eb' }}
           >
             {opt.preview}

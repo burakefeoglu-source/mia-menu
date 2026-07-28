@@ -37,8 +37,30 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Telefon</label>
-              <input name="phone" type="tel" placeholder="+90 5xx xxx xx xx"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm" />
+              <div className="flex gap-2">
+                <select name="phone_code" className="border border-gray-200 rounded-lg px-2 py-2.5 text-sm bg-white flex-shrink-0" defaultValue="+90">
+                  {[
+                    ['+90', '🇹🇷 +90'],
+                    ['+49', '🇩🇪 +49'],
+                    ['+31', '🇳🇱 +31'],
+                    ['+44', '🇬🇧 +44'],
+                    ['+1',  '🇺🇸 +1'],
+                    ['+34', '🇪🇸 +34'],
+                    ['+39', '🇮🇹 +39'],
+                    ['+33', '🇫🇷 +33'],
+                    ['+7',  '🇷🇺 +7'],
+                    ['+971','🇦🇪 +971'],
+                    ['+966','🇸🇦 +966'],
+                    ['+973','🇧🇭 +973'],
+                    ['+972','🇮🇱 +972'],
+                    ['+30', '🇬🇷 +30'],
+                  ].map(([code, label]) => (
+                    <option key={code} value={code}>{label}</option>
+                  ))}
+                </select>
+                <input name="phone" type="tel" placeholder="5xx xxx xx xx"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm" />
+              </div>
             </div>
 
             <div>

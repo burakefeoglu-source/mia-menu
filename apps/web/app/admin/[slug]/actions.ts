@@ -880,3 +880,41 @@ export async function addStamp(
     return { error: `Beklenmeyen hata: ${(e as Error).message}` };
   }
 }
+
+// --- Ürün ek seçenekleri ---
+
+export async function addOptionGroup(productId: string, slug: string, name: string, isRequired: boolean) {
+  const supabase = getDb();
+  const { data: last } = await supabase.from('product_option_groups')
+    .select('sort_order').eq('product_id', productId)
+    .order('sort_order', { ascending: false }).limit(1).maybeSingle();
+  await supabase.from('product_option_groups').insert({
+    product_id: productId, name, is_required: isRequired,
+    sort_order: (last?.sort_order ?? 0) + 1,
+  });
+  revalidatePath(`/admin/${slug}`);
+}
+
+export async function deleteOptionGroup(groupId: string, slug: string) {
+  const supabase = getDb();
+  await supabase.from('product_option_groups').delete().eq('id', groupId);
+  revalidatePath(`/admin/${slug}`);
+}
+
+export async function addOptionItem(groupId: string, slug: string, name: string, price: number, isDefault: boolean) {
+  const supabase = getDb();
+  const { data: last } = await supabase.from('product_option_items')
+    .select('sort_order').eq('group_id', groupId)
+    .order('sort_order', { ascending: false }).limit(1).maybeSingle();
+  await supabase.from('product_option_items').insert({
+    group_id: groupId, name, price, is_default: isDefault,
+    sort_order: (last?.sort_order ?? 0) + 1,
+  });
+  revalidatePath(`/admin/${slug}`);
+}
+
+export async function deleteOptionItem(itemId: string, slug: string) {
+  const supabase = getDb();
+  await supabase.from('product_option_items').delete().eq('id', itemId);
+  revalidatePath(`/admin/${slug}`);
+}

@@ -14,6 +14,10 @@ import {
   updateProduct,
   updateProductFlags,
   updateSectionName,
+  addOptionGroup,
+  deleteOptionGroup,
+  addOptionItem,
+  deleteOptionItem,
 } from '@/app/admin/[slug]/actions';
 import { AllergenIcon } from '@/lib/allergenIcons';
 import { broadcastPreviewRefresh } from '@/lib/previewChannel';
@@ -342,6 +346,24 @@ function ProductEditForm({
   onDone: () => void;
 }) {
   const [imageUrl, setImageUrl] = useState(product.image_url ?? '');
+  const [groups, setGroups] = useState<{ id: string; name: string; is_required: boolean; items: { id: string; name: string; price: number; is_default: boolean }[] }[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newItemInputs, setNewItemInputs] = useState<Record<string, { name: string; price: string }>>({});
+
+  async function loadOptions() {
+    setLoadingOptions(true);
+    const res = await fetch(`/api/product-options?productId=${product.id}`);
+    const data = await res.json();
+    setGroups(data);
+    setLoadingOptions(false);
+  }
+
+  async function toggleOptions() {
+    if (!showOptions && groups.length === 0) await loadOptions();
+    setShowOptions(o => !o);
+  }
 
   return (
     <form
@@ -392,6 +414,67 @@ function ProductEditForm({
           <button type="button" onClick={() => setImageUrl('')} className="text-xs text-red-500 pb-1">
             Fotoğrafı sil
           </button>
+        )}
+      </div>
+
+      {/* Ek seçenekler */}
+      <div className="border border-gray-200 rounded-md overflow-hidden">
+        <button type="button" onClick={toggleOptions}
+          className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-gray-600 bg-white">
+          <span>⊕ Ek seçenekler (boyut, ekstra vb.)</span>
+          <span>{showOptions ? '▲' : '▼'}</span>
+        </button>
+        {showOptions && (
+          <div className="px-2 py-2 bg-white border-t border-gray-100 flex flex-col gap-3">
+            {loadingOptions ? <p className="text-xs text-gray-400">Yükleniyor...</p> : (
+              <>
+                {groups.map(g => (
+                  <div key={g.id} className="border border-gray-100 rounded-md p-2">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs font-medium">{g.name} {g.is_required && <span className="text-red-500">*</span>}</p>
+                      <button type="button" onClick={async () => { await deleteOptionGroup(g.id, slug); await loadOptions(); }}
+                        className="text-[10px] text-red-400">Sil</button>
+                    </div>
+                    {g.items.map(item => (
+                      <div key={item.id} className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] text-gray-500 flex-1">{item.name} — {item.price}₺{item.is_default && ' (varsayılan)'}</span>
+                        <button type="button" onClick={async () => { await deleteOptionItem(item.id, slug); await loadOptions(); }}
+                          className="text-[10px] text-red-400">✕</button>
+                      </div>
+                    ))}
+                    {/* Yeni item ekle */}
+                    <div className="flex gap-1 mt-1.5">
+                      <input placeholder="Seçenek adı" value={newItemInputs[g.id]?.name ?? ''}
+                        onChange={e => setNewItemInputs(prev => ({ ...prev, [g.id]: { ...prev[g.id], name: e.target.value } }))}
+                        className="flex-1 border border-gray-200 rounded px-1.5 py-0.5 text-[10px]" />
+                      <input placeholder="₺" type="number" value={newItemInputs[g.id]?.price ?? ''}
+                        onChange={e => setNewItemInputs(prev => ({ ...prev, [g.id]: { ...prev[g.id], price: e.target.value } }))}
+                        className="w-12 border border-gray-200 rounded px-1.5 py-0.5 text-[10px]" />
+                      <button type="button" onClick={async () => {
+                        const inp = newItemInputs[g.id];
+                        if (!inp?.name || !inp?.price) return;
+                        await addOptionItem(g.id, slug, inp.name, parseFloat(inp.price), g.items.length === 0);
+                        setNewItemInputs(prev => ({ ...prev, [g.id]: { name: '', price: '' } }));
+                        await loadOptions();
+                      }} className="text-[10px] bg-gray-800 text-white px-1.5 py-0.5 rounded">+</button>
+                    </div>
+                  </div>
+                ))}
+                {/* Yeni grup ekle */}
+                <div className="flex gap-1">
+                  <input placeholder="Grup adı (örn: Boyut)" value={newGroupName}
+                    onChange={e => setNewGroupName(e.target.value)}
+                    className="flex-1 border border-gray-200 rounded px-1.5 py-1 text-[10px]" />
+                  <button type="button" onClick={async () => {
+                    if (!newGroupName.trim()) return;
+                    await addOptionGroup(product.id, slug, newGroupName.trim(), false);
+                    setNewGroupName('');
+                    await loadOptions();
+                  }} className="text-[10px] bg-rose-600 text-white px-2 py-1 rounded">Grup ekle</button>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
