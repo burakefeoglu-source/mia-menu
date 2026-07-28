@@ -11,6 +11,7 @@ const groups = [
       { key: 'daily', label: 'Günün menüsü', href: '/daily' },
       { key: 'prices', label: 'Fiyat güncelleme', href: '/prices' },
       { key: 'tags', label: 'Ürün etiketleri', href: '/tags' },
+      { key: 'options', label: 'Ürüne ek seçenekler', href: '/options' },
       { key: 'allergens', label: 'Alerjen listesi', href: '/allergens' },
       { key: 'favorites', label: 'Favori listesi', href: '/favorites' },
       { key: 'import', label: 'İçeri aktar', href: '/import' },

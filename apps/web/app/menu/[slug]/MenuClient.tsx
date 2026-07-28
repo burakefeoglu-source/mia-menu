@@ -47,11 +47,15 @@ function ProductOptions({ productId, basePrice }: { productId: string; basePrice
 
 type ProductWithExtras = Product & {
   product_allergens?: { allergens: { code: string | null; name_tr: string; name_en: string } }[];
-  product_tags?: { tags: { name: string } }[];
+  product_tags?: { tags: { name: string; icon?: string | null } }[];
   is_vegan?: boolean;
   is_vegetarian?: boolean;
   is_gluten_free?: boolean;
   is_daily_special?: boolean;
+  product_option_groups?: {
+    id: string; name: string; is_required: boolean;
+    product_option_items: { id: string; name: string; price: number; is_default: boolean; sort_order: number }[];
+  }[];
 };
 
 type Translation = {
@@ -527,7 +531,20 @@ export default function MenuClient({ tenant, sections, products, announcements, 
                       : <div className="w-full h-24 bg-gray-100" />}
                     <div className="p-2">
                       <p className="text-xs truncate">{nameFor('product', p.id, p.name)}</p>
-                      <p className="text-xs font-medium mt-1">{p.price} ₺</p>
+                      {p.product_option_groups && p.product_option_groups.length > 0 ? (
+                        <div className="flex flex-col gap-0.5 mt-1">
+                          {p.product_option_groups[0].product_option_items
+                            .sort((a, b) => a.sort_order - b.sort_order)
+                            .map(item => (
+                              <p key={item.id} className="text-[10px]">
+                                <span className="text-gray-400">{item.name} </span>
+                                <span className="font-medium">{item.price} ₺</span>
+                              </p>
+                            ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs font-medium mt-1">{p.price} ₺</p>
+                      )}
                     </div>
                   </button>
                 ))}
@@ -563,7 +580,21 @@ export default function MenuClient({ tenant, sections, products, announcements, 
                         {p.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{p.description}</p>}
                       </div>
                     </div>
-                    <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
+                    {/* Fiyat: seçenek varsa seçenekleri göster, yoksa normal fiyat */}
+                    {p.product_option_groups && p.product_option_groups.length > 0 ? (
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        {p.product_option_groups[0].product_option_items
+                          .sort((a, b) => a.sort_order - b.sort_order)
+                          .map(item => (
+                            <span key={item.id} className="text-xs font-medium text-right whitespace-nowrap">
+                              <span className="text-gray-400">{item.name} </span>
+                              <span className={theme.accentText}>{item.price} ₺</span>
+                            </span>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium whitespace-nowrap flex-shrink-0">{p.price} ₺</p>
+                    )}
                   </button>
                 ))}
               </div>
