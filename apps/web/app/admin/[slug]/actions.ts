@@ -1017,3 +1017,10 @@ export async function reorderMenuSets(tenantId: string, slug: string, ids: strin
   revalidatePath(`/admin/${slug}/sets`);
   revalidatePath(`/menu/${slug}`);
 }
+
+export async function updateOptionItem(itemId: string, slug: string, name: string, price: number) {
+  const supabase = getDb();
+  await supabase.from('product_option_items').update({ name, price }).eq('id', itemId);
+  revalidatePath(`/admin/${slug}/options`);
+  revalidatePath(`/menu/${slug}`);
+}
