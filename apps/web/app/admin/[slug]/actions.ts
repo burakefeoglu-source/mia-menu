@@ -640,32 +640,66 @@ export async function bulkUpdatePrices(
   type: 'percent' | 'flat',
   direction: 'increase' | 'decrease',
   amount: number,
-  sectionId?: string
+  sectionId?: string,
+  includeOptions?: boolean
 ) {
   const supabase = getDb();
+
+  function calcNew(price: number): number {
+    let newPrice: number;
+    if (type === 'percent') {
+      const delta = (price * amount) / 100;
+      newPrice = direction === 'increase' ? price + delta : price - delta;
+    } else {
+      newPrice = direction === 'increase' ? price + amount : price - amount;
+    }
+    return Math.max(0, Math.round(newPrice * 100) / 100);
+  }
+
+  // Ürün fiyatları
   let query = supabase.from('products').select('id, price').eq('tenant_id', tenantId);
   if (sectionId) query = query.eq('section_id', sectionId);
   const { data: products } = await query;
-  if (!products?.length) return { updated: 0 };
+  let updated = 0;
 
-  const updates = products.map((p) => {
-    let newPrice: number;
-    if (type === 'percent') {
-      const delta = (p.price * amount) / 100;
-      newPrice = direction === 'increase' ? p.price + delta : p.price - delta;
-    } else {
-      newPrice = direction === 'increase' ? p.price + amount : p.price - amount;
+  if (products?.length) {
+    await Promise.all(
+      products.map((p) =>
+        supabase.from('products').update({ price: calcNew(p.price) }).eq('id', p.id)
+      )
+    );
+    updated += products.length;
+  }
+
+  // Seçenek fiyatları
+  if (includeOptions && products?.length) {
+    const productIds = products.map(p => p.id);
+    const { data: groups } = await supabase
+      .from('product_option_groups')
+      .select('id')
+      .in('product_id', productIds);
+
+    if (groups?.length) {
+      const groupIds = groups.map(g => g.id);
+      const { data: items } = await supabase
+        .from('product_option_items')
+        .select('id, price')
+        .in('group_id', groupIds);
+
+      if (items?.length) {
+        await Promise.all(
+          items.map(i =>
+            supabase.from('product_option_items').update({ price: calcNew(i.price) }).eq('id', i.id)
+          )
+        );
+        updated += items.length;
+      }
     }
-    return { id: p.id, price: Math.max(0, Math.round(newPrice)) };
-  });
-
-  await Promise.all(
-    updates.map((u) => supabase.from('products').update({ price: u.price }).eq('id', u.id))
-  );
+  }
 
   revalidatePath(`/admin/${slug}/prices`);
   revalidatePath(`/menu/${slug}`);
-  return { updated: updates.length };
+  return { updated };
 }
 
 // --- Ürün bayrakları (diyet rozetleri + günün menüsü) ---

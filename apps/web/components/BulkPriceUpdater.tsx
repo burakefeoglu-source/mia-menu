@@ -16,6 +16,7 @@ export default function BulkPriceUpdater({
   const [direction, setDirection] = useState<'increase' | 'decrease'>('increase');
   const [amount, setAmount] = useState('');
   const [sectionId, setSectionId] = useState('');
+  const [includeOptions, setIncludeOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -24,15 +25,15 @@ export default function BulkPriceUpdater({
     const num = parseFloat(amount);
     if (!num || num <= 0) return;
 
-    const confirm = window.confirm(
-      `Tüm ${sectionId ? 'seçili bölümdeki' : 'menüdeki'} fiyatlar ${direction === 'increase' ? 'artırılacak' : 'düşürülecek'}: ${direction === 'increase' ? '+' : '-'}${num}${type === 'percent' ? '%' : '₺'}. Devam et?`
+    const confirmed = window.confirm(
+      `Tüm ${sectionId ? 'seçili bölümdeki' : 'menüdeki'} fiyatlar ${direction === 'increase' ? 'artırılacak' : 'düşürülecek'}: ${direction === 'increase' ? '+' : '-'}${num}${type === 'percent' ? '%' : '₺'}${includeOptions ? ' (ek seçenekler dahil)' : ''}. Devam et?`
     );
-    if (!confirm) return;
+    if (!confirmed) return;
 
     setLoading(true);
     setResult(null);
-    const res = await bulkUpdatePrices(tenantId, slug, type, direction, num, sectionId || undefined);
-    setResult(`${res.updated} ürün güncellendi.`);
+    const res = await bulkUpdatePrices(tenantId, slug, type, direction, num, sectionId || undefined, includeOptions);
+    setResult(`${res.updated} fiyat güncellendi.`);
     setAmount('');
     setLoading(false);
   }
@@ -109,6 +110,17 @@ export default function BulkPriceUpdater({
           {loading ? 'Güncelleniyor...' : 'Uygula'}
         </button>
       </form>
+
+      {/* Ek seçenekleri dahil et */}
+      <label className="flex items-center gap-2 mt-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={includeOptions}
+          onChange={e => setIncludeOptions(e.target.checked)}
+          className="accent-amber-600 w-3.5 h-3.5"
+        />
+        <span className="text-xs text-gray-600">Ürün ek seçenek fiyatlarını da güncelle (boyut, pişirme vb.)</span>
+      </label>
 
       {result && (
         <p className="text-xs text-green-700 mt-2">✓ {result}</p>
