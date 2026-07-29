@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   activateSubscription, extendTrial, toggleTenantActive,
   saveTenantNote, createTenantManual
@@ -40,6 +41,8 @@ export default function SuperAdminClient({ tenants, stats }: {
   tenants: Tenant[];
   stats: { totalViews: number; totalReviews: number; activeTenants: number };
 }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [tab, setTab] = useState<'overview' | 'tenants' | 'alerts' | 'new'>('overview');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -47,6 +50,37 @@ export default function SuperAdminClient({ tenants, stats }: {
   const [noteText, setNoteText] = useState('');
   const [creating, setCreating] = useState(false);
   const [createResult, setCreateResult] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, string>>({});
+
+  function refresh() {
+    startTransition(() => router.refresh());
+  }
+
+  async function doActivate(tenantId: string, months: number, label: string) {
+    setLoadingId(tenantId + '-activate');
+    await activateSubscription(tenantId, months);
+    setFeedback(prev => ({ ...prev, [tenantId]: `✓ ${label} aktif edildi` }));
+    setLoadingId(null);
+    refresh();
+    setTimeout(() => setFeedback(prev => { const n = { ...prev }; delete n[tenantId]; return n; }), 3000);
+  }
+
+  async function doExtendTrial(tenantId: string, days: number) {
+    setLoadingId(tenantId + '-trial');
+    await extendTrial(tenantId, days);
+    setFeedback(prev => ({ ...prev, [tenantId]: `✓ +${days} gün trial eklendi` }));
+    setLoadingId(null);
+    refresh();
+    setTimeout(() => setFeedback(prev => { const n = { ...prev }; delete n[tenantId]; return n; }), 3000);
+  }
+
+  async function doToggle(tenantId: string, active: boolean) {
+    setLoadingId(tenantId + '-toggle');
+    await toggleTenantActive(tenantId, active);
+    setLoadingId(null);
+    refresh();
+  }
 
   const filtered = tenants.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -54,10 +88,7 @@ export default function SuperAdminClient({ tenants, stats }: {
     (t.phone ?? '').includes(search)
   );
 
-  const alerts = tenants.filter(t => {
-    const info = subInfo(t);
-    return info.isRisk || !t.is_active;
-  });
+  const alerts = tenants.filter(t => subInfo(t).isRisk || !t.is_active);
 
   const TABS = [
     { key: 'overview', label: 'Özet' },
@@ -66,8 +97,41 @@ export default function SuperAdminClient({ tenants, stats }: {
     { key: 'new', label: '+ Yeni ekle' },
   ] as const;
 
+  function ActionButtons({ t }: { t: Tenant }) {
+    const activating = loadingId === t.id + '-activate';
+    const trailing = loadingId === t.id + '-trial';
+    return (
+      <div className="flex gap-2 flex-wrap items-center">
+        <button onClick={() => doActivate(t.id, 12, '1 yıl')} disabled={activating}
+          className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-md disabled:opacity-50">
+          {activating ? '...' : '✓ 1 yıl aktif et'}
+        </button>
+        <button onClick={() => doActivate(t.id, 1, '1 ay')} disabled={activating}
+          className="text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 py-1.5 rounded-md">
+          1 ay aktif et
+        </button>
+        <button onClick={() => doExtendTrial(t.id, 7)} disabled={trailing}
+          className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-md">
+          {trailing ? '...' : '+7 gün trial'}
+        </button>
+        <button onClick={() => doToggle(t.id, !t.is_active)}
+          disabled={loadingId === t.id + '-toggle'}
+          className={`text-xs px-2.5 py-1.5 rounded-md border ${t.is_active ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
+          {t.is_active ? 'Pasif yap' : 'Aktif yap'}
+        </button>
+        {feedback[t.id] && (
+          <span className="text-xs text-green-600 font-medium">{feedback[t.id]}</span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
+      {isPending && (
+        <div className="text-xs text-gray-400 text-right mb-2">Güncelleniyor...</div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         {TABS.map(t => (
@@ -141,29 +205,13 @@ export default function SuperAdminClient({ tenants, stats }: {
 
                   {isExpanded && (
                     <div className="border-t border-gray-100 px-4 py-3 flex flex-col gap-3">
-                      {/* Linkler */}
                       <div className="flex gap-2 flex-wrap">
                         <a href={`/admin/${t.slug}`} target="_blank" rel="noreferrer"
                           className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-md">Paneli aç ↗</a>
                         <a href={`/menu/${t.slug}`} target="_blank" rel="noreferrer"
                           className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-md">Menü ↗</a>
                       </div>
-
-                      {/* Abonelik işlemleri */}
-                      <div className="flex gap-2 flex-wrap">
-                        <button onClick={() => activateSubscription(t.id, 12)}
-                          className="text-xs bg-green-600 text-white px-2 py-1 rounded-md">✓ 1 yıl aktif et</button>
-                        <button onClick={() => activateSubscription(t.id, 1)}
-                          className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded-md">1 ay aktif et</button>
-                        <button onClick={() => extendTrial(t.id, 7)}
-                          className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-md">+7 gün trial</button>
-                        <button onClick={() => toggleTenantActive(t.id, !t.is_active)}
-                          className={`text-xs px-2 py-1 rounded-md border ${t.is_active ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
-                          {t.is_active ? 'Pasif yap' : 'Aktif yap'}
-                        </button>
-                      </div>
-
-                      {/* Müşteri notu */}
+                      <ActionButtons t={t} />
                       {noteEditing === t.id ? (
                         <div className="flex gap-2">
                           <input value={noteText} onChange={e => setNoteText(e.target.value)}
@@ -172,6 +220,7 @@ export default function SuperAdminClient({ tenants, stats }: {
                           <button onClick={async () => {
                             await saveTenantNote(t.id, noteText);
                             setNoteEditing(null);
+                            refresh();
                           }} className="text-xs bg-gray-800 text-white px-2 py-1 rounded-md">Kaydet</button>
                           <button onClick={() => setNoteEditing(null)} className="text-xs text-gray-400">İptal</button>
                         </div>
@@ -181,10 +230,7 @@ export default function SuperAdminClient({ tenants, stats }: {
                           📝 {t.admin_notes ?? 'Not ekle...'}
                         </button>
                       )}
-
-                      <p className="text-xs text-gray-300">
-                        Kayıt: {new Date(t.created_at).toLocaleDateString('tr-TR')}
-                      </p>
+                      <p className="text-xs text-gray-300">Kayıt: {new Date(t.created_at).toLocaleDateString('tr-TR')}</p>
                     </div>
                   )}
                 </div>
@@ -200,6 +246,7 @@ export default function SuperAdminClient({ tenants, stats }: {
           {alerts.length === 0 && <p className="text-sm text-gray-400">Uyarı yok 🎉</p>}
           {alerts.map(t => {
             const info = subInfo(t);
+            const activating = loadingId === t.id + '-activate';
             return (
               <div key={t.id} className="bg-white border border-red-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                 <div>
@@ -208,12 +255,15 @@ export default function SuperAdminClient({ tenants, stats }: {
                   <span className={`text-xs px-2 py-0.5 rounded-md mt-1 inline-block ${info.color}`}>
                     {!t.is_active ? 'Pasif' : info.label}{info.daysLeft ? ` · ${info.daysLeft}` : ''}
                   </span>
+                  {feedback[t.id] && <p className="text-xs text-green-600 mt-1">{feedback[t.id]}</p>}
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => activateSubscription(t.id, 12)}
-                    className="text-xs bg-green-600 text-white px-2 py-1 rounded-md">Aktif et</button>
-                  <button onClick={() => extendTrial(t.id, 7)}
-                    className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-md">+7 gün</button>
+                <div className="flex gap-2 flex-shrink-0 flex-col items-end">
+                  <button onClick={() => doActivate(t.id, 12, '1 yıl')} disabled={activating}
+                    className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-md disabled:opacity-50 whitespace-nowrap">
+                    {activating ? '...' : '✓ Aktif et (1 yıl)'}
+                  </button>
+                  <button onClick={() => doExtendTrial(t.id, 7)}
+                    className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-md">+7 gün trial</button>
                 </div>
               </div>
             );
@@ -231,7 +281,7 @@ export default function SuperAdminClient({ tenants, stats }: {
             const res = await createTenantManual(fd);
             setCreating(false);
             if (res?.error) setCreateResult('❌ ' + res.error);
-            else setCreateResult(`✓ Oluşturuldu: /admin/${res?.slug}`);
+            else { setCreateResult(`✓ Oluşturuldu: /admin/${res?.slug}`); refresh(); }
           }} className="flex flex-col gap-3">
             <div>
               <label className="text-xs text-gray-500 mb-1 block">İşletme adı *</label>
