@@ -69,13 +69,14 @@ const labels = {
   en: { allergenInfo: 'Allergen & calorie info', search: 'Search dishes...', notFound: 'No items found', allergens: 'Allergens', noAllergens: 'No listed allergens', footnote: 'This information is shown in line with the regulation effective July 1, 2026.', favorites: 'Favorites', leaveReview: 'Leave feedback' },
 };
 
-export default function MenuClient({ tenant, sections, products, announcements, translations, loyaltyProgram }: {
+export default function MenuClient({ tenant, sections, products, announcements, translations, loyaltyProgram, menuSets }: {
   tenant: Tenant;
   sections: MenuSection[];
   products: ProductWithExtras[];
   announcements: Announcement[];
   translations: Translation[];
   loyaltyProgram: { id: string; name: string; required_stamps: number; reward_description: string } | null;
+  menuSets: { id: string; name: string; description: string | null; price: number; image_url: string | null; menu_set_items: { id: string; quantity: number; products: { id: string; name: string; price: number; image_url: string | null } | null }[] }[];
 }) {
   const layout = (tenant.menu_layout as 'classic' | 'dark' | 'minimal') ?? 'classic';
   const sectionNav = (tenant.section_nav as 'tabs' | 'grid' | 'list') ?? 'tabs';
@@ -395,6 +396,41 @@ export default function MenuClient({ tenant, sections, products, announcements, 
                 <span className="text-sm font-medium text-gray-900">{nameFor('product', p.id, p.name)}</span>
                 <span className="text-sm font-semibold text-rose-600">{p.price} ₺</span>
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Menü setleri */}
+      {menuSets.length > 0 && (
+        <div className="px-4 mt-3">
+          <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${theme.accentText}`}>
+            {t.favorites === 'Favoriler' ? 'Özel Setler' : 'Special Sets'}
+          </p>
+          <div className="flex flex-col gap-2">
+            {menuSets.map(set => (
+              <div key={set.id} className={`rounded-xl border ${theme.headerBg} border-transparent overflow-hidden`}>
+                <div className="flex gap-3 p-3">
+                  {set.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={set.image_url} alt={set.name} className="w-16 h-14 object-cover rounded-lg flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold ${theme.headerText}`}>{set.name}</p>
+                    {set.description && <p className="text-xs text-gray-500 mt-0.5">{set.description}</p>}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {set.menu_set_items.filter(i => i.products).map(item => (
+                        <span key={item.id} className="text-[10px] text-gray-400">
+                          {item.products!.name}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
+                        </span>
+                      )).reduce((acc: React.ReactNode[], el, i, arr) => [
+                        ...acc, el, i < arr.length - 1 ? <span key={`sep-${i}`} className="text-[10px] text-gray-300">·</span> : null
+                      ], [])}
+                    </div>
+                  </div>
+                  <p className={`text-sm font-bold flex-shrink-0 ${theme.accentText}`}>{set.price} ₺</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>

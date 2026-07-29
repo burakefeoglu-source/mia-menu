@@ -56,6 +56,13 @@ export default async function MenuPage({ params }: { params: { slug: string } })
     .eq('is_active', true)
     .limit(1);
 
+  const { data: menuSets } = await supabase
+    .from('menu_sets')
+    .select('*, menu_set_items(id, quantity, products(id, name, price, image_url))')
+    .eq('tenant_id', tenant!.id)
+    .eq('is_active', true)
+    .order('sort_order');
+
   return (
     <MenuClient
       tenant={tenant!}
@@ -64,6 +71,7 @@ export default async function MenuPage({ params }: { params: { slug: string } })
       announcements={announcements ?? []}
       translations={translations ?? []}
       loyaltyProgram={loyaltyPrograms?.[0] ?? null}
+      menuSets={menuSets ?? []}
     />
   );
 }

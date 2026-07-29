@@ -918,3 +918,68 @@ export async function deleteOptionItem(itemId: string, slug: string) {
   await supabase.from('product_option_items').delete().eq('id', itemId);
   revalidatePath(`/admin/${slug}`);
 }
+
+// --- Menü setleri ---
+
+export async function createMenuSet(tenantId: string, slug: string, formData: FormData) {
+  const supabase = getDb();
+  const { data: last } = await supabase.from('menu_sets')
+    .select('sort_order').eq('tenant_id', tenantId)
+    .order('sort_order', { ascending: false }).limit(1).maybeSingle();
+  await supabase.from('menu_sets').insert({
+    tenant_id: tenantId,
+    name: formData.get('name') as string,
+    description: (formData.get('description') as string) || null,
+    price: parseFloat(formData.get('price') as string) || 0,
+    sort_order: (last?.sort_order ?? 0) + 1,
+  });
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function updateMenuSet(setId: string, slug: string, formData: FormData) {
+  const supabase = getDb();
+  await supabase.from('menu_sets').update({
+    name: formData.get('name') as string,
+    description: (formData.get('description') as string) || null,
+    price: parseFloat(formData.get('price') as string) || 0,
+    image_url: (formData.get('image_url') as string) || null,
+  }).eq('id', setId);
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function toggleMenuSet(setId: string, slug: string, active: boolean) {
+  const supabase = getDb();
+  await supabase.from('menu_sets').update({ is_active: active }).eq('id', setId);
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function deleteMenuSet(setId: string, slug: string) {
+  const supabase = getDb();
+  await supabase.from('menu_sets').delete().eq('id', setId);
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function addMenuSetItem(setId: string, slug: string, productId: string, quantity: number) {
+  const supabase = getDb();
+  await supabase.from('menu_set_items').insert({ set_id: setId, product_id: productId, quantity });
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function removeMenuSetItem(itemId: string, slug: string) {
+  const supabase = getDb();
+  await supabase.from('menu_set_items').delete().eq('id', itemId);
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
+
+export async function reorderMenuSets(tenantId: string, slug: string, ids: string[]) {
+  const supabase = getDb();
+  await Promise.all(ids.map((id, i) => supabase.from('menu_sets').update({ sort_order: i }).eq('id', id)));
+  revalidatePath(`/admin/${slug}/sets`);
+  revalidatePath(`/menu/${slug}`);
+}
