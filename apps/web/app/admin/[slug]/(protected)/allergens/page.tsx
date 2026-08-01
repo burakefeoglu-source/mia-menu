@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
-import { addAllergen } from '../../actions';
+import { addAllergen, bulkDetectAllergens } from '../../actions';
 import AllergenAssignGrid from '@/components/AllergenAssignGrid';
 import { AllergenIcon } from '@/lib/allergenIcons';
+import BulkAllergenScan from './BulkAllergenScan';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,7 @@ export default async function AllergensPage({ params }: { params: { slug: string
   return (
     <div>
       <h2 className="text-base font-medium mb-1">Alerjen listesi</h2>
+      <BulkAllergenScan tenantId={tenant!.id} slug={params.slug} action={bulkDetectAllergens.bind(null, tenant!.id, params.slug)} />
       <p className="text-xs text-gray-500 mb-3">
         İlk 8 tanesi yasal standart liste (silinemez). İstediğin kadar kendi alerjenini
         ekleyebilirsin.

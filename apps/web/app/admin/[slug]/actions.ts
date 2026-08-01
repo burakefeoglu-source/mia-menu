@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { translateToEnglish } from '@/lib/translate';
 import { requireTenantAccess } from '@/lib/authGuard';
+import { detectAllergens } from '@/lib/allergenDetector';
 
 // RLS bypass için service role client
 function getDb() {
@@ -46,7 +47,7 @@ export async function addProduct(
 
   // Otomatik alerjen tespiti
   if (product?.id) {
-    await autoAssignAllergens(supabase, product.id, tenantId, name, description);
+    await autoAssignAllergens(supabase, product.id, name, description);
   }
 
   revalidatePath(`/admin/${slug}`);
@@ -73,7 +74,7 @@ export async function deleteSection(sectionId: string, slug: string) {
 export async function updateProduct(
   productId: string,
   slug: string,
-  data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null; tenantId?: string }
+  data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null }
 ) {
   const supabase = getDb();
   await supabase
@@ -87,10 +88,8 @@ export async function updateProduct(
     })
     .eq('id', productId);
 
-  // Otomatik alerjen tespiti (isim veya açıklama değişince)
-  if (data.tenantId) {
-    await autoAssignAllergens(supabase, productId, data.tenantId, data.name, data.description);
-  }
+  // Otomatik alerjen tespiti
+  await autoAssignAllergens(supabase, productId, data.name, data.description);
 
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/admin/${slug}/prices`);
@@ -98,39 +97,36 @@ export async function updateProduct(
 }
 
 // --- Otomatik alerjen ataması ---
-async function autoAssignAllergens(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  productId: string,
-  tenantId: string,
-  name: string,
-  description?: string | null
-) {
-  const { detectAllergens } = await import('@/lib/allergenDetector');
-  const codes = detectAllergens(name, description);
-  if (codes.length === 0) return;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function autoAssignAllergens(supabase: any, productId: string, name: string, description?: string | null) {
+  try {
+    const codes = detectAllergens(name, description);
+    if (codes.length === 0) return;
 
-  // Mevcut alerjen ID'lerini çek (sadece tenant'ın allergen listesinden)
-  const { data: allergens } = await supabase
-    .from('allergens')
-    .select('id, code')
-    .in('code', codes);
+    // Alerjen ID'lerini çek
+    const { data: allergens } = await supabase
+      .from('allergens')
+      .select('id, code')
+      .in('code', codes);
 
-  if (!allergens?.length) return;
+    if (!allergens?.length) return;
 
-  // Mevcut atamaları sil ve yeniden ekle (mevcut manüel seçimleri koruma)
-  const { data: existing } = await supabase
-    .from('product_allergens')
-    .select('allergen_id')
-    .eq('product_id', productId);
+    // Mevcut atamaları kontrol et — sadece yeni olanları ekle
+    const { data: existing } = await supabase
+      .from('product_allergens')
+      .select('allergen_id')
+      .eq('product_id', productId);
 
-  const existingIds = new Set((existing ?? []).map((e: { allergen_id: string }) => e.allergen_id));
-  const newAllergens = allergens.filter((a: { id: string }) => !existingIds.has(a.id));
+    const existingIds = new Set((existing ?? []).map((e: { allergen_id: string }) => e.allergen_id));
+    const toInsert = allergens
+      .filter((a: { id: string }) => !existingIds.has(a.id))
+      .map((a: { id: string }) => ({ product_id: productId, allergen_id: a.id }));
 
-  if (newAllergens.length > 0) {
-    await supabase.from('product_allergens').insert(
-      newAllergens.map((a: { id: string }) => ({ product_id: productId, allergen_id: a.id }))
-    );
+    if (toInsert.length > 0) {
+      await supabase.from('product_allergens').insert(toInsert);
+    }
+  } catch (e) {
+    console.error('autoAssignAllergens error:', e);
   }
 }
 
@@ -581,7 +577,6 @@ export async function importProducts(
 
   // Otomatik alerjen tespiti — her ürün için
   if (insertedProducts?.length) {
-    const { detectAllergens } = await import('@/lib/allergenDetector');
     const { data: allAllergens } = await supabase.from('allergens').select('id, code').not('code', 'is', null);
     const allergenByCode = new Map((allAllergens ?? []).map((a: { id: string; code: string }) => [a.code, a.id]));
 
@@ -1093,4 +1088,44 @@ export async function updateOptionItem(itemId: string, slug: string, name: strin
   await supabase.from('product_option_items').update({ name, price }).eq('id', itemId);
   revalidatePath(`/admin/${slug}/options`);
   revalidatePath(`/menu/${slug}`);
+}
+
+// --- Mevcut tüm ürünlere toplu alerjen tespiti ---
+export async function bulkDetectAllergens(tenantId: string, slug: string): Promise<{ assigned: number }> {
+  const supabase = getDb();
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('id, name, description')
+    .eq('tenant_id', tenantId);
+
+  if (!products?.length) return { assigned: 0 };
+
+  const { data: allAllergens } = await supabase
+    .from('allergens').select('id, code').not('code', 'is', null);
+  const allergenByCode = new Map((allAllergens ?? []).map((a: { id: string; code: string }) => [a.code, a.id]));
+
+  let assigned = 0;
+  for (const p of products) {
+    const codes = detectAllergens(p.name, p.description);
+    if (codes.length === 0) continue;
+
+    const { data: existing } = await supabase
+      .from('product_allergens').select('allergen_id').eq('product_id', p.id);
+    const existingIds = new Set((existing ?? []).map((e: { allergen_id: string }) => e.allergen_id));
+
+    const toInsert = codes
+      .map(code => allergenByCode.get(code))
+      .filter((id): id is string => !!id && !existingIds.has(id))
+      .map(allergen_id => ({ product_id: p.id, allergen_id }));
+
+    if (toInsert.length > 0) {
+      await supabase.from('product_allergens').insert(toInsert);
+      assigned += toInsert.length;
+    }
+  }
+
+  revalidatePath(`/admin/${slug}/allergens`);
+  revalidatePath(`/menu/${slug}`);
+  return { assigned };
 }
