@@ -31,15 +31,23 @@ export async function addProduct(
   formData: FormData
 ) {
   const supabase = getDb();
+  const name = formData.get('name') as string;
+  const description = (formData.get('description') as string) || null;
 
-  await supabase.from('products').insert({
+  const { data: product } = await supabase.from('products').insert({
     tenant_id: tenantId,
     section_id: sectionId,
-    name: formData.get('name') as string,
+    name,
     price: Number(formData.get('price')),
     calories: formData.get('calories') ? Number(formData.get('calories')) : null,
     image_url: (formData.get('image_url') as string) || null,
-  });
+    description,
+  }).select('id').single();
+
+  // Otomatik alerjen tespiti
+  if (product?.id) {
+    await autoAssignAllergens(supabase, product.id, tenantId, name, description);
+  }
 
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
@@ -65,7 +73,7 @@ export async function deleteSection(sectionId: string, slug: string) {
 export async function updateProduct(
   productId: string,
   slug: string,
-  data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null }
+  data: { name: string; price: number; calories: number | null; imageUrl: string | null; description?: string | null; tenantId?: string }
 ) {
   const supabase = getDb();
   await supabase
@@ -78,9 +86,52 @@ export async function updateProduct(
       description: data.description ?? null,
     })
     .eq('id', productId);
+
+  // Otomatik alerjen tespiti (isim veya açıklama değişince)
+  if (data.tenantId) {
+    await autoAssignAllergens(supabase, productId, data.tenantId, data.name, data.description);
+  }
+
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/admin/${slug}/prices`);
   revalidatePath(`/menu/${slug}`);
+}
+
+// --- Otomatik alerjen ataması ---
+async function autoAssignAllergens(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  productId: string,
+  tenantId: string,
+  name: string,
+  description?: string | null
+) {
+  const { detectAllergens } = await import('@/lib/allergenDetector');
+  const codes = detectAllergens(name, description);
+  if (codes.length === 0) return;
+
+  // Mevcut alerjen ID'lerini çek (sadece tenant'ın allergen listesinden)
+  const { data: allergens } = await supabase
+    .from('allergens')
+    .select('id, code')
+    .in('code', codes);
+
+  if (!allergens?.length) return;
+
+  // Mevcut atamaları sil ve yeniden ekle (mevcut manüel seçimleri koruma)
+  const { data: existing } = await supabase
+    .from('product_allergens')
+    .select('allergen_id')
+    .eq('product_id', productId);
+
+  const existingIds = new Set((existing ?? []).map((e: { allergen_id: string }) => e.allergen_id));
+  const newAllergens = allergens.filter((a: { id: string }) => !existingIds.has(a.id));
+
+  if (newAllergens.length > 0) {
+    await supabase.from('product_allergens').insert(
+      newAllergens.map((a: { id: string }) => ({ product_id: productId, allergen_id: a.id }))
+    );
+  }
 }
 
 export async function setProductAllergens(
@@ -525,8 +576,27 @@ export async function importProducts(
     sort_order: 0,
   })).filter((p) => p.section_id);
 
-  const { error } = await supabase.from('products').insert(products);
+  const { data: insertedProducts, error } = await supabase.from('products').insert(products).select('id, name, description');
   if (error) return { error: 'Aktarım sırasında hata oluştu: ' + error.message };
+
+  // Otomatik alerjen tespiti — her ürün için
+  if (insertedProducts?.length) {
+    const { detectAllergens } = await import('@/lib/allergenDetector');
+    const { data: allAllergens } = await supabase.from('allergens').select('id, code').not('code', 'is', null);
+    const allergenByCode = new Map((allAllergens ?? []).map((a: { id: string; code: string }) => [a.code, a.id]));
+
+    const allergenRows: { product_id: string; allergen_id: string }[] = [];
+    for (const p of insertedProducts) {
+      const codes = detectAllergens(p.name, p.description);
+      for (const code of codes) {
+        const aid = allergenByCode.get(code);
+        if (aid) allergenRows.push({ product_id: p.id, allergen_id: aid });
+      }
+    }
+    if (allergenRows.length > 0) {
+      await supabase.from('product_allergens').insert(allergenRows);
+    }
+  }
 
   revalidatePath(`/admin/${slug}`);
   revalidatePath(`/menu/${slug}`);
