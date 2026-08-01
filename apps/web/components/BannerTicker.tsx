@@ -1,32 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
 type Banner = { text: string; bg_color: string };
 
 export default function BannerTicker({ banners }: { banners: Banner[] }) {
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    if (banners.length <= 1) return;
-    const timer = setInterval(() => setIdx(i => (i + 1) % banners.length), 4000);
-    return () => clearInterval(timer);
-  }, [banners.length]);
-
   if (banners.length === 0) return null;
-  const banner = banners[idx];
+
+  // Tüm banner metinlerini tek bir şerit halinde birleştir
+  const combinedItems = [...banners, ...banners, ...banners]; // 3x döngü için
+  const speed = banners.length * 12; // banner sayısına göre hız ayarı (sn)
 
   return (
-    <div className="overflow-hidden rounded-lg mb-5 py-1.5 transition-colors duration-500"
-      style={{ background: banner.bg_color }}>
-      <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
-        {[1, 2, 3].map((i) => (
-          <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0">
-            {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-            {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-            {banner.text}
-          </span>
-        ))}
+    <div className="mb-5 rounded-lg overflow-hidden"
+      style={{ background: banners[0].bg_color }}>
+      <div className="overflow-hidden py-1.5">
+        <div
+          className="flex whitespace-nowrap"
+          style={{ animation: `ticker ${speed}s linear infinite` }}
+        >
+          {combinedItems.map((b, i) => (
+            <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0"
+              style={{ color: 'white' }}>
+              {b.text}
+              <span className="mx-4 opacity-50">✦</span>
+            </span>
+          ))}
+        </div>
       </div>
       <style>{`
         @keyframes ticker {
@@ -34,14 +32,6 @@ export default function BannerTicker({ banners }: { banners: Banner[] }) {
           100% { transform: translateX(-33.333%); }
         }
       `}</style>
-      {banners.length > 1 && (
-        <div className="flex justify-center gap-1 mt-1">
-          {banners.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)}
-              className={`w-1 h-1 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/40'}`} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
