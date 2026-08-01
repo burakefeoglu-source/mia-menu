@@ -1129,3 +1129,74 @@ export async function bulkDetectAllergens(tenantId: string, slug: string): Promi
   revalidatePath(`/menu/${slug}`);
   return { assigned };
 }
+
+// --- AI menü aktarımı ---
+export async function importFromAI(
+  tenantId: string,
+  slug: string,
+  sections: { name: string; products: { name: string; price: number; description?: string; calories?: number; allergens?: string[] }[] }[]
+): Promise<{ imported: number; error?: string }> {
+  const supabase = getDb();
+
+  const { data: allAllergens } = await supabase
+    .from('allergens').select('id, code').not('code', 'is', null);
+  const allergenByCode = new Map((allAllergens ?? []).map((a: { id: string; code: string }) => [a.code, a.id]));
+
+  let imported = 0;
+
+  for (const [sIdx, section] of sections.entries()) {
+    // Bölüm oluştur (ya da mevcut olanı bul)
+    const { data: existingSection } = await supabase
+      .from('menu_sections').select('id')
+      .eq('tenant_id', tenantId).ilike('name', section.name).maybeSingle();
+
+    let sectionId: string;
+    if (existingSection) {
+      sectionId = existingSection.id;
+    } else {
+      const { data: newSection } = await supabase.from('menu_sections').insert({
+        tenant_id: tenantId,
+        name: section.name,
+        sort_order: sIdx,
+      }).select('id').single();
+      if (!newSection) continue;
+      sectionId = newSection.id;
+    }
+
+    // Ürünleri ekle
+    for (const [pIdx, product] of section.products.entries()) {
+      const { data: newProduct } = await supabase.from('products').insert({
+        tenant_id: tenantId,
+        section_id: sectionId,
+        name: product.name,
+        price: product.price || 0,
+        description: product.description || null,
+        calories: product.calories || null,
+        sort_order: pIdx,
+      }).select('id').single();
+
+      if (!newProduct) continue;
+      imported++;
+
+      // Alerjenler
+      const allergenCodes = new Set([
+        ...(product.allergens ?? []),
+        ...detectAllergens(product.name, product.description),
+      ]);
+
+      const allergenRows = Array.from(allergenCodes)
+        .map(code => allergenByCode.get(code))
+        .filter((id): id is string => !!id)
+        .map(allergen_id => ({ product_id: newProduct.id, allergen_id }));
+
+      if (allergenRows.length > 0) {
+        await supabase.from('product_allergens').insert(allergenRows);
+      }
+    }
+  }
+
+  revalidatePath(`/admin/${slug}`);
+  revalidatePath(`/admin/${slug}/import`);
+  revalidatePath(`/menu/${slug}`);
+  return { imported };
+}
