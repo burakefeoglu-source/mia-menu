@@ -23,13 +23,32 @@ export async function activateSubscription(tenantId: string, months: number) {
   const db = await getAdminClient();
   const now = new Date();
   const expires = new Date(now.getTime() + months * 30 * 86400000);
-  await db.from('subscriptions').upsert({
-    tenant_id: tenantId,
-    status: 'active',
-    plan: 'yearly',
-    plan_starts_at: now.toISOString(),
-    plan_expires_at: expires.toISOString(),
-  }, { onConflict: 'tenant_id' });
+
+  // Önce mevcut kaydı al
+  const { data: existing } = await db
+    .from('subscriptions')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
+
+  if (existing) {
+    await db.from('subscriptions').update({
+      status: 'active',
+      plan: 'yearly',
+      plan_starts_at: now.toISOString(),
+      plan_expires_at: expires.toISOString(),
+    }).eq('tenant_id', tenantId);
+  } else {
+    await db.from('subscriptions').insert({
+      tenant_id: tenantId,
+      status: 'active',
+      plan: 'yearly',
+      plan_starts_at: now.toISOString(),
+      plan_expires_at: expires.toISOString(),
+      trial_ends_at: now.toISOString(),
+    });
+  }
+
   revalidatePath('/super-admin');
 }
 

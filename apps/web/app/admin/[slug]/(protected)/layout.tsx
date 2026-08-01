@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import PreviewPanel from '@/components/PreviewPanel';
 import TrialBanner from '@/components/TrialBanner';
 import LogoutButton from '@/components/LogoutButton';
+import BannerTicker from '@/components/BannerTicker';
 
 export default async function AdminLayout({
   children,
@@ -34,11 +35,14 @@ export default async function AdminLayout({
 
   if (!staff) redirect('/giris');
 
-  const { data: banner } = await supabase
+  const { data: banners } = await supabase
     .from('admin_banners')
     .select('text, bg_color')
     .eq('is_active', true)
-    .maybeSingle();
+    .order('created_at');
+
+  // Aktif bannerlar arası dönüşüm için index (server-side sabit, client carousel ile döner)
+  const activeBanners = banners ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -62,25 +66,9 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        {/* Kayan reklam bandı */}
-        {banner && (
-          <div className="overflow-hidden rounded-lg mb-5 py-1.5" style={{ background: banner.bg_color }}>
-            <div className="flex whitespace-nowrap" style={{ animation: 'ticker 18s linear infinite' }}>
-              {[1, 2, 3].map((i) => (
-                <span key={i} className="text-xs text-white font-medium px-8 flex-shrink-0">
-                  {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-                  {banner.text}&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;
-                  {banner.text}
-                </span>
-              ))}
-            </div>
-            <style>{`
-              @keyframes ticker {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-33.333%); }
-              }
-            `}</style>
-          </div>
+        {/* Kayan reklam bandı — çoklu banner desteği */}
+        {activeBanners.length > 0 && (
+          <BannerTicker banners={activeBanners} />
         )}
 
         <div className="flex gap-5 items-start">
