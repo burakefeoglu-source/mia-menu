@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { addBannerAction, deleteBannerAction, toggleBannerAction } from './bannerActions';
 
 type Banner = { id: string; text: string; bg_color: string; is_active: boolean };
 
 export default function BannerManager({ initialBanners }: { initialBanners: Banner[] }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+
   const [banners, setBanners] = useState(initialBanners);
+
+  useEffect(() => {
+    setBanners(initialBanners);
+  }, [initialBanners]);
   const [newText, setNewText] = useState('');
   const [newColor, setNewColor] = useState('#c2185b');
   const [adding, setAdding] = useState(false);
 
-  function refresh() {
-    startTransition(() => router.refresh());
-  }
+  function refresh() { window.location.reload(); }
 
   async function handleToggle(id: string, currentActive: boolean) {
     // Optimistic update
@@ -51,7 +51,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
         <p className="text-sm font-medium">Reklam bandı yönetimi</p>
         <span className="text-xs text-gray-400">
-          {activeBanners.length} aktif{isPending ? ' · kaydediliyor...' : ''}
+          {activeBanners.length} aktif
         </span>
       </div>
 

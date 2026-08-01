@@ -1,26 +1,32 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
+function getDb() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 export async function addBannerAction(formData: FormData) {
-  const supabase = createClient();
+  const db = getDb();
   const text = (formData.get('text') as string)?.trim();
   const bg_color = (formData.get('bg_color') as string) || '#c2185b';
   if (!text) return;
-  const { error } = await supabase.from('admin_banners').insert({ text, bg_color, is_active: true });
-  if (error) console.error('Banner eklenemedi:', error);
+  await db.from('admin_banners').insert({ text, bg_color, is_active: true });
   revalidatePath('/super-admin');
 }
 
 export async function toggleBannerAction(id: string, is_active: boolean) {
-  const supabase = createClient();
-  await supabase.from('admin_banners').update({ is_active }).eq('id', id);
+  const db = getDb();
+  await db.from('admin_banners').update({ is_active }).eq('id', id);
   revalidatePath('/super-admin');
 }
 
 export async function deleteBannerAction(id: string) {
-  const supabase = createClient();
-  await supabase.from('admin_banners').delete().eq('id', id);
+  const db = getDb();
+  await db.from('admin_banners').delete().eq('id', id);
   revalidatePath('/super-admin');
 }

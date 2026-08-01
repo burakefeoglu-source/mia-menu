@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   activateSubscription, extendTrial, toggleTenantActive,
   saveTenantNote, createTenantManual
@@ -41,8 +40,7 @@ export default function SuperAdminClient({ tenants, stats }: {
   tenants: Tenant[];
   stats: { totalViews: number; totalReviews: number; activeTenants: number };
 }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+
   const [tab, setTab] = useState<'overview' | 'tenants' | 'alerts' | 'new'>('overview');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -53,9 +51,7 @@ export default function SuperAdminClient({ tenants, stats }: {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, string>>({});
 
-  function refresh() {
-    startTransition(() => router.refresh());
-  }
+  function refresh() { window.location.reload(); }
 
   async function doActivate(tenantId: string, months: number, label: string) {
     setLoadingId(tenantId + '-activate');
@@ -128,10 +124,6 @@ export default function SuperAdminClient({ tenants, stats }: {
 
   return (
     <div>
-      {isPending && (
-        <div className="text-xs text-gray-400 text-right mb-2">Güncelleniyor...</div>
-      )}
-
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         {TABS.map(t => (
