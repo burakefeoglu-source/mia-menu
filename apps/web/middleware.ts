@@ -1,26 +1,28 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hostname = request.headers.get('host') ?? '';
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'miamenu.online';
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'miamenu.online';
 
-  // Subdomain kontrolü
+export async function middleware(request: NextRequest) {
+  const hostname = request.headers.get('host') || '';
+  const { pathname } = request.nextUrl;
+
+  // ── Subdomain routing ──────────────────────────────────────────
   const isSubdomain =
-    hostname !== rootDomain &&
-    hostname !== `www.${rootDomain}` &&
+    hostname.endsWith(`.${ROOT_DOMAIN}`) &&
+    hostname !== `www.${ROOT_DOMAIN}` &&
     !hostname.includes('vercel.app') &&
-    hostname.endsWith(`.${rootDomain}`);
+    !hostname.includes('localhost');
 
   if (isSubdomain) {
-    const slug = hostname.replace(`.${rootDomain}`, '');
-    const url = request.nextUrl.clone();
-    url.pathname = `/menu/${slug}${pathname === '/' ? '' : pathname}`;
-    return NextResponse.rewrite(url);
+    const slug = hostname.replace(`.${ROOT_DOMAIN}`, '');
+    const rewritePath = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
+    const rewriteUrl = new URL(rewritePath, `https://${ROOT_DOMAIN}`);
+    rewriteUrl.search = request.nextUrl.search;
+    return NextResponse.rewrite(rewriteUrl);
   }
 
-  // Admin auth koruması
+  // ── Admin auth koruması ───────────────────────────────────────
   if (!pathname.startsWith('/admin')) {
     return NextResponse.next();
   }
@@ -49,5 +51,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
