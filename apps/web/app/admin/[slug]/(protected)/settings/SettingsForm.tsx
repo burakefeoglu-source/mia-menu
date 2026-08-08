@@ -56,6 +56,34 @@ export default function SettingsForm({ tenant, slug }: { tenant: Tenant; slug: s
           className="w-full border border-gray-200 rounded-md px-3 py-1.5 text-sm" />
       </div>
 
+      <div className="border border-gray-200 rounded-xl p-3 flex flex-col gap-2">
+        <label className="block text-xs font-medium text-gray-700">🌐 Menü adresi (subdomain)</label>
+        <p className="text-[11px] text-gray-400">
+          Müşterilerinizin menüye gireceği özel adres. Sadece harf, rakam ve tire kullanın.
+        </p>
+        <div className="flex items-center gap-1">
+          <input
+            name="custom_subdomain"
+            defaultValue={(tenant as { custom_subdomain?: string | null }).custom_subdomain ?? ''}
+            placeholder={slug}
+            pattern="[a-z0-9-]+"
+            maxLength={50}
+            className="flex-1 border border-gray-200 rounded-md px-3 py-1.5 text-sm"
+            onChange={e => {
+              e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            }}
+          />
+          <span className="text-xs text-gray-400 whitespace-nowrap">.miamenu.online</span>
+        </div>
+        {(tenant as { custom_subdomain?: string | null }).custom_subdomain && (
+          <a href={`https://${(tenant as { custom_subdomain?: string | null }).custom_subdomain}.miamenu.online`}
+            target="_blank" rel="noreferrer"
+            className="text-xs text-blue-600">
+            → {(tenant as { custom_subdomain?: string | null }).custom_subdomain}.miamenu.online ↗
+          </a>
+        )}
+      </div>
+
       <div>
         <label className="block text-xs text-gray-500 mb-1">Kapak fotoğrafı</label>
         <ImageUploader folder="covers" currentUrl={coverUrl}

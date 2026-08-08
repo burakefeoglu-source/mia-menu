@@ -199,6 +199,7 @@ export async function updateTenant(tenantId: string, slug: string, formData: For
       logo_url: (formData.get('logo_url') as string) || null,
       logo_light_url: (formData.get('logo_light_url') as string) || null,
       qr_logo_url: (formData.get('qr_logo_url') as string) || null,
+      custom_subdomain: (formData.get('custom_subdomain') as string)?.toLowerCase().replace(/[^a-z0-9-]/g, '') || null,
       google_review_url: (formData.get('google_review_url') as string) || null,
       instagram_url: (formData.get('social_instagram') as string) || null,
       whatsapp_number: (formData.get('social_whatsapp') as string) || null,

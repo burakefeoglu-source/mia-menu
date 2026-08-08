@@ -15,7 +15,24 @@ export async function middleware(request: NextRequest) {
     !hostname.includes('localhost');
 
   if (isSubdomain) {
-    const slug = hostname.replace(`.${ROOT_DOMAIN}`, '');
+    const subdomainSlug = hostname.replace(`.${ROOT_DOMAIN}`, '');
+
+    // custom_subdomain → gerçek slug'ı bul
+    let slug = subdomainSlug;
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const db = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data } = await db
+        .from('tenants')
+        .select('slug')
+        .eq('custom_subdomain', subdomainSlug)
+        .maybeSingle();
+      if (data?.slug) slug = data.slug;
+    } catch { /* DB erişilemezse slug kullan */ }
+
     const url = request.nextUrl.clone();
     url.pathname = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
     return NextResponse.rewrite(url);

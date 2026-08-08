@@ -1,6 +1,7 @@
 export type Tenant = {
   id: string;
   slug: string;
+  custom_subdomain: string | null;
   name: string;
   phone: string | null;
   address: string | null;
