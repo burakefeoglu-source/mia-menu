@@ -18,18 +18,22 @@ export default async function QrPage({ params }: { params: { slug: string } }) {
     .eq('tenant_id', tenant!.id)
     .order('label');
 
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const menuUrl = rootDomain
+    ? `https://${params.slug}.${rootDomain}`
+    : `${baseUrl}/menu/${params.slug}`;
 
   const generalEntry = {
     key: 'general',
     label: 'Genel menü',
-    url: `${baseUrl}/menu/${params.slug}`,
+    url: `${menuUrl}`,
   };
 
   const tableEntries = (tables ?? []).map((t) => ({
     key: t.id,
     label: t.label,
-    url: `${baseUrl}/menu/${params.slug}?table=${t.qr_token}`,
+    url: `${menuUrl}?table=${t.qr_token}`,
   }));
 
   return (
