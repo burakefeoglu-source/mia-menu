@@ -2,39 +2,30 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({ request });
-  const { pathname, hostname } = request.nextUrl;
-
-  // ── Subdomain routing ──────────────────────────────────────────
-  // bistro.miamenu.online → /menu/bistro
-  // bistro.miamenu.online/admin → /admin/bistro
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') ?? '';
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'miamenu.online';
+
+  // Subdomain kontrolü
   const isSubdomain =
     hostname !== rootDomain &&
     hostname !== `www.${rootDomain}` &&
+    !hostname.includes('vercel.app') &&
     hostname.endsWith(`.${rootDomain}`);
 
   if (isSubdomain) {
     const slug = hostname.replace(`.${rootDomain}`, '');
-
-    // /admin/* → admin paneli
-    if (pathname.startsWith('/admin') || pathname === '/giris') {
-      return NextResponse.rewrite(new URL(pathname, request.url));
-    }
-
-    // /kart/* → sadakat kartı
-    if (pathname.startsWith('/kart')) {
-      return NextResponse.rewrite(new URL(pathname, request.url));
-    }
-
-    // Her şey → menü sayfası
-    const menuPath = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
-    return NextResponse.rewrite(new URL(menuPath, request.url));
+    const url = request.nextUrl.clone();
+    url.pathname = `/menu/${slug}${pathname === '/' ? '' : pathname}`;
+    return NextResponse.rewrite(url);
   }
 
-  // ── Auth koruması (admin sayfaları) ───────────────────────────
-  if (!pathname.startsWith('/admin')) return response;
+  // Admin auth koruması
+  if (!pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
 
+  const response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -58,5 +49,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)'],
 };
