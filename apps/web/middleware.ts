@@ -16,10 +16,9 @@ export async function middleware(request: NextRequest) {
 
   if (isSubdomain) {
     const slug = hostname.replace(`.${ROOT_DOMAIN}`, '');
-    const rewritePath = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
-    const rewriteUrl = new URL(rewritePath, `https://${ROOT_DOMAIN}`);
-    rewriteUrl.search = request.nextUrl.search;
-    return NextResponse.rewrite(rewriteUrl);
+    const url = request.nextUrl.clone();
+    url.pathname = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // ── Admin auth koruması ───────────────────────────────────────
