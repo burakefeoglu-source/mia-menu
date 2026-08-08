@@ -3,6 +3,37 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
+  const { pathname, hostname } = request.nextUrl;
+
+  // ── Subdomain routing ──────────────────────────────────────────
+  // bistro.miamenu.online → /menu/bistro
+  // bistro.miamenu.online/admin → /admin/bistro
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'miamenu.online';
+  const isSubdomain =
+    hostname !== rootDomain &&
+    hostname !== `www.${rootDomain}` &&
+    hostname.endsWith(`.${rootDomain}`);
+
+  if (isSubdomain) {
+    const slug = hostname.replace(`.${rootDomain}`, '');
+
+    // /admin/* → admin paneli
+    if (pathname.startsWith('/admin') || pathname === '/giris') {
+      return NextResponse.rewrite(new URL(pathname, request.url));
+    }
+
+    // /kart/* → sadakat kartı
+    if (pathname.startsWith('/kart')) {
+      return NextResponse.rewrite(new URL(pathname, request.url));
+    }
+
+    // Her şey → menü sayfası
+    const menuPath = pathname === '/' ? `/menu/${slug}` : `/menu/${slug}${pathname}`;
+    return NextResponse.rewrite(new URL(menuPath, request.url));
+  }
+
+  // ── Auth koruması (admin sayfaları) ───────────────────────────
+  if (!pathname.startsWith('/admin')) return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,16 +52,11 @@ export async function middleware(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const { pathname } = request.nextUrl;
-
-  // Giriş yapılmamışsa /giris'e yönlendir
-  if (pathname.startsWith('/admin') && !user) {
-    return NextResponse.redirect(new URL('/giris', request.url));
-  }
+  if (!user) return NextResponse.redirect(new URL('/giris', request.url));
 
   return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };
