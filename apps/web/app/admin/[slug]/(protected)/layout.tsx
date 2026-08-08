@@ -56,7 +56,7 @@ export default async function AdminLayout({
           <div className="flex items-center gap-3">
             <a
               href={process.env.NEXT_PUBLIC_ROOT_DOMAIN
-                ? `https://${params.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`
+                ? `https://${(tenant as { custom_subdomain?: string | null }).custom_subdomain ?? params.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`
                 : `/menu/${params.slug}`}
               target="_blank"
               rel="noreferrer"
