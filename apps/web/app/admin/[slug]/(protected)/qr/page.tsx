@@ -8,7 +8,7 @@ export default async function QrPage({ params }: { params: { slug: string } }) {
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, qr_style, logo_url, qr_logo_url')
+    .select('id, qr_style, logo_url, qr_logo_url, custom_subdomain')
     .eq('slug', params.slug)
     .single();
 
@@ -20,8 +20,9 @@ export default async function QrPage({ params }: { params: { slug: string } }) {
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const subdomain = (tenant as { custom_subdomain?: string | null }).custom_subdomain ?? params.slug;
   const menuUrl = rootDomain
-    ? `https://${params.slug}.${rootDomain}`
+    ? `https://${subdomain}.${rootDomain}`
     : `${baseUrl}/menu/${params.slug}`;
 
   const generalEntry = {
